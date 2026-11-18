@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-theme="day">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#7fcfff">
+<title>آزمایشگاه الکتریسیته ساکن</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky1:#7fcfff;--sky2:#e8f7ff;--ink:#16324f;--panel:rgba(255,255,255,.86);--line:rgba(20,50,80,.14);
+  --accent:#ff7a59;--accent2:#3a86ff;--pos:#f0445f;--neg:#2f7bff;--wood1:#dca46a;--wood2:#a86f3c;
+  --floor:#7c92aa;--insul:#e9eff6;--body:#dff1ff;--glowf:none;--chip:#ffffff;--shadow:0 10px 30px rgba(30,70,120,.18);
+}
+[data-theme=night]{
+  --sky1:#070d26;--sky2:#1c2a5c;--ink:#e8eeff;--panel:rgba(18,26,58,.82);--line:rgba(160,190,255,.2);
+  --pos:#ff5d7a;--neg:#4aa3ff;--wood1:#6d4b30;--wood2:#3d2918;--floor:#141b2c;--insul:#9db0ca;--body:#050a1c;
+  --glowf:drop-shadow(0 0 5px rgba(255,255,255,.85));--chip:#202c5a;--shadow:0 10px 30px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:'Vazirmatn',Tahoma,sans-serif;background:var(--body);color:var(--ink);transition:background .6s,color .6s;min-height:100vh}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px;flex-wrap:wrap}
+h1{margin:0;font-size:clamp(18px,3vw,28px);font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+h1 small{display:block;font-size:12px;font-weight:400;color:var(--ink);opacity:.7;-webkit-text-fill-color:currentColor}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tab,.chip,.btn{font-family:inherit;border:1px solid var(--line);background:var(--chip);color:var(--ink);padding:8px 16px;border-radius:999px;cursor:pointer;font-size:14px;transition:transform .2s,background .3s,box-shadow .3s}
+.tab:hover,.chip:hover,.btn:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.tab.on{background:linear-gradient(135deg,var(--accent),#ffb347);color:#fff;border-color:transparent;font-weight:600}
+.chip.on{background:var(--accent2);color:#fff;border-color:transparent}
+.btn{border-radius:12px;padding:7px 12px;font-size:13px}
+#theme{width:58px;height:32px;border-radius:999px;border:1px solid var(--line);background:linear-gradient(90deg,#8fd3ff,#cfeaff);position:relative;cursor:pointer;transition:background .5s;padding:0}
+[data-theme=night] #theme{background:linear-gradient(90deg,#10193d,#2b3b80)}
+#theme i{position:absolute;top:3px;right:4px;width:24px;height:24px;border-radius:50%;background:#ffd23f;box-shadow:0 0 12px #ffd23f;transition:transform .5s cubic-bezier(.6,-.3,.3,1.4),background .5s,box-shadow .5s}
+[data-theme=night] #theme i{transform:translateX(-26px);background:#f1f4ff;box-shadow:inset -7px -3px 0 0 #9aa8d8,0 0 12px #9bb0ff}
+main{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;padding:0 20px 28px;max-width:none;margin:auto}
+@media(max-width:1000px){main{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:var(--shadow);backdrop-filter:blur(8px);transition:background .6s}
+.card h3{margin:0 0 8px;font-size:15px}
+.stagewrap{position:relative;border-radius:20px;overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--line);background:var(--sky2)}
+svg#stage{display:block;width:auto;height:calc(100vh - 150px);min-height:480px;max-width:100%;margin:auto;touch-action:pan-y;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+#toast{position:absolute;top:12px;left:50%;transform:translate(-50%,-30px);background:rgba(15,30,55,.9);color:#fff;padding:8px 16px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;transition:all .4s;max-width:90%;text-align:center}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.subs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}
+.side{display:flex;flex-direction:column;gap:12px}
+ol{margin:0;padding-inline-start:20px;line-height:1.95;font-size:13.5px}
+.goal{font-size:13.5px;line-height:1.9;margin:0 0 6px}
+.tip{font-size:12.5px;opacity:.85;line-height:1.8;margin-top:6px;padding:8px 10px;border-radius:10px;background:rgba(255,170,70,.15)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
+.row em{font-style:normal;font-size:11.5px;background:rgba(58,134,255,.18);padding:2px 8px;border-radius:8px}
+.sl{display:grid;grid-template-columns:70px 1fr 46px;gap:6px;align-items:center;font-size:12.5px;margin:4px 0}
+.sl input{width:100%;accent-color:var(--accent)}
+.series{display:flex;flex-direction:column;gap:2px;font-size:12px}
+.series div{padding:2px 10px;border-radius:7px;background:rgba(120,150,190,.12);display:flex;justify-content:space-between}
+.series div.a{background:rgba(255,122,89,.35);font-weight:600}
+.series div.b{background:rgba(58,134,255,.35);font-weight:600}
+.ends{display:flex;justify-content:space-between;font-size:11px;opacity:.75;margin:2px 4px}
+select{font-family:inherit;padding:6px 8px;border-radius:10px;border:1px solid var(--line);background:var(--chip);color:var(--ink);width:100%;margin:3px 0 8px}
+.sun-rays{transform-origin:860px 90px;animation:spin 30s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.cloud{animation:drift 60s linear infinite}
+.cloud.c2{animation-duration:90s;animation-delay:-30s}
+.cloud.c3{animation-duration:75s;animation-delay:-50s}
+@keyframes drift{from{transform:translateX(-300px)}to{transform:translateX(1300px)}}
+.sun,.cloud{transition:opacity 1s}
+.moon,.stars{opacity:0;transition:opacity 1s}
+[data-theme=night] .sun{opacity:0}[data-theme=night] .cloud{opacity:.12}
+[data-theme=night] .moon,[data-theme=night] .stars{opacity:1}
+.star{animation:tw 3s ease-in-out infinite}
+@keyframes tw{50%{opacity:.25}}
+.chg circle{filter:var(--glowf)}
+.chg.pos circle{fill:var(--pos)}.chg.neg circle{fill:var(--neg)}
+.lbl{fill:#fff;stroke:rgba(0,0,0,.6);stroke-width:3;paint-order:stroke;font-weight:700;font-size:15px}
+.hint{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.45}}
+.qopt{display:block;width:100%;text-align:right;margin:6px 0;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--chip);color:var(--ink);font-family:inherit;font-size:14px;cursor:pointer}
+.qopt.ok{background:#2fb36d;color:#fff}.qopt.no{background:#e5484d;color:#fff}
+#qb{display:none;grid-column:1/-1}.fm{font-size:13px;line-height:2}.fm b{color:var(--accent)}
+#lItem,#lCond{filter:drop-shadow(0 6px 4px rgba(0,0,0,.25))}
+.pal{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pi{cursor:grab;padding:8px;border:1px dashed var(--line);border-radius:12px;text-align:center;background:var(--chip);font-size:13px;user-select:none}.pi span{display:block;font-size:28px}
+#cProp.float{position:fixed;z-index:60;width:290px;max-height:82vh;overflow:auto;box-shadow:0 14px 40px rgba(0,0,0,.4)}
+
+main{padding-bottom:72px}
+#credit{position:fixed;bottom:calc(10px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:70;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 16px;font-size:12.5px;font-weight:600;box-shadow:var(--shadow);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);pointer-events:none;white-space:nowrap;color:var(--ink)}
+#credit b{background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+#rot{display:none;margin:0 0 10px;padding:9px 12px;border-radius:12px;background:rgba(255,170,70,.2);font-size:13px;line-height:1.8;cursor:pointer}
+.btn,.tab,.chip{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+@media(max-height:500px){svg#stage{height:calc(100dvh - 110px);min-height:260px}}
+@media(max-width:700px){
+  header{padding:10px 12px;gap:8px}
+  .tabs{width:100%;order:3;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px}
+  .tab{white-space:nowrap;padding:8px 12px;font-size:13px;flex:0 0 auto}
+  main{padding:0 10px 72px;gap:12px}
+  .subs{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px}
+  .chip{white-space:nowrap;flex:0 0 auto}
+  .btn{padding:10px 13px;font-size:14px}
+  .card{backdrop-filter:none;-webkit-backdrop-filter:none;padding:12px}
+  #lItem,#lCond{filter:none}
+  .chg circle{filter:none}
+  .sl{grid-template-columns:64px 1fr 44px}
+  .sl input{height:30px}
+  #toast{font-size:13px;top:6px}
+  #cProp.float{left:8px!important;right:8px;top:auto!important;bottom:56px;width:auto;max-height:55vh}
+}
+@media(max-width:700px) and (orientation:portrait){
+  svg#stage{width:100%;height:auto;min-height:0}
+  #rot{display:block}
+}
+@media(min-width:1001px){
+  #labSec{position:sticky;top:8px;align-self:start}
+  svg#stage{height:calc(100vh - 190px)}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>⚡ آزمایشگاه الکتریسیته ساکن<small>فیزیک پایه هشتم — اجسام را بکش و آزمایش کن | سازنده: ماهان همتا</small></h1>
+  <div class="tabs" id="tabs"></div>
+  <button id="theme" aria-label="تم شب و روز"><i></i></button>
+</header>
+<main>
+  <section id="labSec">
+    <div id="rot" onclick="this.remove()">📱 برای تجربه‌ی بهتر گوشی را افقی بگیر (برای بستن این پیام بزن)</div>
+    <div class="subs" id="subs"></div>
+    <div class="stagewrap">
+      <svg id="stage" viewBox="0 0 1000 640" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--sky1)"/><stop offset="1" style="stop-color:var(--sky2)"/></linearGradient>
+          <linearGradient id="gWood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--wood1)"/><stop offset="1" style="stop-color:var(--wood2)"/></linearGradient>
+          <linearGradient id="gInsul" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#dfe7ef"/><stop offset=".5" stop-color="#fff"/><stop offset="1" stop-color="#b9c6d4"/></linearGradient>
+          <linearGradient id="gGlass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e9fbff" stop-opacity=".95"/><stop offset=".5" stop-color="#9fdcf2" stop-opacity=".75"/><stop offset="1" stop-color="#6cc3e6" stop-opacity=".85"/></linearGradient>
+          <linearGradient id="gPlastic" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb199"/><stop offset=".5" stop-color="#ff6b57"/><stop offset="1" stop-color="#d63f3f"/></linearGradient>
+          <linearGradient id="gMystery" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d9c8ff"/><stop offset=".5" stop-color="#9d7dff"/><stop offset="1" stop-color="#6a4ccf"/></linearGradient>
+          <linearGradient id="gJar" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#bfe8ff" stop-opacity=".55"/><stop offset=".25" stop-color="#ffffff" stop-opacity=".25"/><stop offset=".8" stop-color="#9fd4f5" stop-opacity=".2"/><stop offset="1" stop-color="#bfe8ff" stop-opacity=".5"/></linearGradient>
+          <radialGradient id="mA" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#fff6c9"/><stop offset=".35" stop-color="#ffd24d"/><stop offset="1" stop-color="#b8860b"/></radialGradient>
+          <radialGradient id="mB" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#ffffff"/><stop offset=".4" stop-color="#b8c9e0"/><stop offset="1" stop-color="#5f7391"/></radialGradient>
+          <radialGradient id="mC" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#ffe3d0"/><stop offset=".4" stop-color="#e8946a"/><stop offset="1" stop-color="#8f4524"/></radialGradient>
+          <radialGradient id="mS" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#fff"/><stop offset=".4" stop-color="#d7dde6"/><stop offset="1" stop-color="#7d8794"/></radialGradient>
+        <pattern id="pK" width="12" height="10" patternUnits="userSpaceOnUse"><path d="M0 8L3 2 6 8 9 2 12 8" fill="none" stroke="rgba(0,0,0,.22)" stroke-width="1.6"/></pattern>
+<pattern id="pW" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M0 4H8M4 0V8" stroke="rgba(0,0,0,.18)" stroke-width="1.4"/></pattern>
+<pattern id="pH" width="9" height="18" patternUnits="userSpaceOnUse"><path d="M2 0Q6 9 2 18" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="1.2"/></pattern>
+<linearGradient id="gSheen" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient>
+</defs>
+        <rect width="1000" height="640" fill="url(#gSky)"/>
+        <g class="stars" id="stars"></g>
+        <g class="sun"><g class="sun-rays" stroke="#ffd23f" stroke-width="5" stroke-linecap="round" id="rays"></g><circle cx="860" cy="90" r="36" fill="#ffd23f"/></g>
+        <g class="moon"><circle cx="860" cy="90" r="34" fill="#f1f4ff"/><circle cx="846" cy="82" r="6" fill="#d6dcf3"/><circle cx="874" cy="102" r="8" fill="#d6dcf3"/><circle cx="868" cy="72" r="4" fill="#d6dcf3"/></g>
+        <g class="cloud"><g fill="#fff" opacity=".9"><ellipse cx="0" cy="70" rx="60" ry="20"/><ellipse cx="30" cy="55" rx="40" ry="22"/><ellipse cx="-30" cy="58" rx="32" ry="18"/></g></g>
+        <g class="cloud c2"><g fill="#fff" opacity=".8" transform="translate(0,90)"><ellipse cx="0" cy="70" rx="50" ry="16"/><ellipse cx="25" cy="58" rx="32" ry="18"/></g></g>
+        <g class="cloud c3"><g fill="#fff" opacity=".7" transform="translate(0,-10)"><ellipse cx="0" cy="70" rx="70" ry="22"/><ellipse cx="-35" cy="56" rx="36" ry="20"/></g></g>
+        <!-- table -->
+        <rect x="0" y="556" width="1000" height="84" style="fill:var(--floor)"/>
+        <rect x="0" y="520" width="1000" height="36" fill="url(#gWood)"/>
+        <rect x="0" y="500" width="1000" height="22" style="fill:var(--wood1)"/>
+        <rect x="0" y="500" width="1000" height="4" fill="rgba(255,255,255,.35)"/>
+        <text x="500" y="621" text-anchor="middle" font-size="12" style="fill:var(--ink)" opacity=".6">جعبه‌ابزار: سیم زمین و انگشت را از اینجا بردار و روی اجسام ببر</text>
+        <!-- ground symbol -->
+        <g stroke="#222" stroke-width="3" stroke-linecap="round"><line x1="70" y1="568" x2="70" y2="586"/><line x1="48" y1="586" x2="92" y2="586"/><line x1="56" y1="595" x2="84" y2="595"/><line x1="63" y1="604" x2="77" y2="604"/></g>
+        <text x="70" y="627" text-anchor="middle" font-size="12" style="fill:var(--ink)">زمین</text>
+        <g id="lCond"></g><g id="lWire"></g><g id="lItem"></g><g id="lFx"></g>
+      </svg>
+      <div id="toast"></div>
+    </div>
+    <div class="tools">
+      <button class="btn" id="bReset">🔄 از نو</button>
+      <button class="btn" id="bRecharge">🔋 شارژ دوباره میله‌ها</button>
+      <button class="btn" id="bMute">🔊</button><button class="btn" id="bFs">⛶ تمام‌صفحه</button><select id="selHum" aria-label="رطوبت هوا" style="width:auto;margin:0;padding:7px 10px"><option value="0">☀️ هوای خشک</option><option value="1">⛅ هوای معمولی</option><option value="2">🌧️ هوای مرطوب</option></select><span id="extra" class="tools" style="margin:0"></span>
+    </div>
+  </section>
+  <section id="qb" class="card"></section>
+  <aside class="side" id="side">
+    <div class="card" id="cPal" style="display:none"><h3>🧰 جعبه‌ی اجسام — بکش و روی صحنه بنداز</h3><div class="pal" id="pal"></div></div>
+    <div class="card" id="cProp" style="display:none"><h3>🎚️ ویژگی‌های جسم انتخاب‌شده</h3><div id="prop"></div></div>
+    <div class="card"><h3 id="sTitle"></h3><p class="goal" id="sGoal"></p><ol id="sSteps"></ol><div class="tip" id="sTip"></div></div>
+    <div class="card" id="cSeries" style="display:none"><h3>انتخاب جنس‌ها</h3>
+      <label style="font-size:12.5px">جنس میله</label><select id="selRod"></select>
+      <label style="font-size:12.5px">جنس پارچه / جسم دوم</label><select id="selCloth"></select>
+      <div class="ends"><span>انتهای مثبت سری ↑</span></div><div class="series" id="series"></div><div class="ends"><span>انتهای منفی سری ↓</span></div>
+    </div>
+    <div class="card" id="cCoul" style="display:none"><h3>⚖️ قانون کولن (کره‌ی اول و دوم)</h3><div class="fm" id="coul"></div></div>
+    <div class="card"><h3>📊 وضعیت زنده</h3><div id="status"></div></div>
+    <div class="card" id="cCtl"><h3>🎛️ تنظیم اجسام</h3><div id="ctl"></div></div>
+  </aside>
+</main>
+
+<div id="credit">ساخته‌شده توسط <b>ماهان همتا</b></div>
+<script>
+(function(){
+'use strict';
+const NS='http://www.w3.org/2000/svg';
+const MOB=matchMedia('(max-width:700px)');
+const CAPM='برنج / مس',JW=64,JT=150;
+const W=1000,H=640,TY=500,GX=70,GY=586,CC=0.9;
+const svg=document.getElementById('stage');
+const L={cond:document.getElementById('lCond'),wire:document.getElementById('lWire'),item:document.getElementById('lItem'),fx:document.getElementById('lFx')};
+const $=s=>document.querySelector(s);
+function mk(tag,at,parent){const e=document.createElementNS(NS,tag);for(const k in at)e.setAttribute(k,at[k]);if(parent)parent.appendChild(e);return e;}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const fa=s=>String(s).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]).replace('.','٫');
+const fmt=v=>{const r=Math.round(v*10)/10;if(Math.abs(r)<0.05)return '۰ (خنثی)';return (r>0?'+':'−')+fa(Math.abs(r));};
+const fmtI=v=>'\u2066'+fmt(v)+'\u2069';
+const sgn=v=>v>0?1:v<0?-1:0;
+function arm(b,fn){const t=b.textContent;b.onclick=()=>{if(b.dataset.arm){clearTimeout(b._t);b.dataset.arm='';b.textContent=t;fn();}else{b.dataset.arm='1';b.textContent='⚠️ مطمئنی؟ دوباره بزن';b._t=setTimeout(()=>{b.dataset.arm='';b.textContent=t;},3000);}};}
+
+/* ---------- theme ---------- */
+(function(){
+  const rays=$('#rays');for(let i=0;i<12;i++){const a=i*Math.PI/6;mk('line',{x1:860+Math.cos(a)*46,y1:90+Math.sin(a)*46,x2:860+Math.cos(a)*62,y2:90+Math.sin(a)*62},rays);}
+  const st=$('#stars');for(let i=0;i<60;i++){mk('circle',{cx:Math.random()*1000,cy:Math.random()*400,r:Math.random()*1.6+.4,fill:'#fff',class:'star',style:'animation-delay:'+(Math.random()*3)+'s'},st);}
+  let saved=null;try{saved=localStorage.getItem('esl-theme');}catch(e){}
+  if(saved)document.documentElement.setAttribute('data-theme',saved);
+  $('#theme').onclick=()=>{const n=document.documentElement.getAttribute('data-theme')==='day'?'night':'day';document.documentElement.setAttribute('data-theme',n);try{localStorage.setItem('esl-theme',n);}catch(e){}};
+})();
+
+/* ---------- materials (triboelectric series) ---------- */
+const SERIES=['موی انسان','شیشه','نایلون','پشم','موی گربه','سرب','ابریشم','آلومینیوم','کاغذ','چوب','پارچه کتان','کهربا','برنج / مس','پلاستیک','لاستیک','تفلون'];
+const PAT={'پشم':'pK','لاستیک':'pK','پارچه کتان':'pW','کاغذ':'pW','موی انسان':'pH','موی گربه':'pH','چوب':'pH'};
+const MATC={'موی انسان':'#7a4a2b','شیشه':'#a9e3fa','نایلون':'#ffc4e1','پشم':'#eadfc6','موی گربه':'#b98b5e','سرب':'#8a8f99','ابریشم':'#f7a8d0','آلومینیوم':'#c8d0d8','کاغذ':'#fff4d6','چوب':'#b8814a','پارچه کتان':'#d9c9a3','کهربا':'#ffb000','برنج / مس':'#d08a3a','پلاستیک':'#ff6b57','لاستیک':'#3b3b44','تفلون':'#e9ecef'};
+
+/* ---------- geometry helpers ---------- */
+function distSeg(px,py,s){const dx=s[2]-s[0],dy=s[3]-s[1],l2=dx*dx+dy*dy;let t=l2?((px-s[0])*dx+(py-s[1])*dy)/l2:0;t=clamp(t,0,1);const x=s[0]+t*dx,y=s[1]+t*dy;return {d:Math.hypot(px-x,py-y),x,y};}
+function prox(s,c){const r=distSeg(c.cx,c.cy,s.seg);const gap=r.d-c.R-s.pad;if(gap<=0)return 1;return Math.pow(clamp(1-gap/200,0,1),1.5);}
+const svgPt=svg.createSVGPoint();
+function toSVG(e){svgPt.x=e.clientX;svgPt.y=e.clientY;return svgPt.matrixTransform(svg.getScreenCTM().inverse());}
+
+/* ---------- particles (charge symbols) ---------- */
+class PG{
+  constructor(parent,sc,sx,sy){this.g=mk('g',{},parent);this.p=[];this.sc=sc||1;this.sx=sx||0;this.sy=sy||0;this.rate=.2;}
+  mkp(){const g=mk('g',{class:'chg'},this.g);mk('circle',{r:8.5},g);const t=mk('text',{'text-anchor':'middle','dominant-baseline':'central','font-size':14,'font-weight':800,fill:'#fff'},g);return g;}
+  set(des){
+    while(this.p.length<des.length){this.p.push({el:this.mkp(),x:this.sx,y:this.sy,a:0,s:0,tx:this.sx,ty:this.sy,want:1});}
+    for(let i=0;i<this.p.length;i++){const o=this.p[i],d=des[i];
+      if(d){o.tx=d.x;o.ty=d.y;o.want=1;if(o.s!==d.s){o.s=d.s;o.el.setAttribute('class','chg '+(d.s>0?'pos':'neg'));o.el.lastChild.textContent=d.s>0?'+':'−';}}
+      else o.want=0;}
+  }
+  step(){for(let i=this.p.length-1;i>=0;i--){const o=this.p[i];o.x+=(o.tx-o.x)*this.rate;o.y+=(o.ty-o.y)*this.rate;o.a+=(o.want-o.a)*.18;
+      o.el.setAttribute('transform','translate('+o.x.toFixed(1)+','+o.y.toFixed(1)+') scale('+this.sc+')');o.el.style.opacity=o.a.toFixed(2);
+      if(!o.want&&o.a<.04){o.el.remove();this.p.splice(i,1);}}}
+}
+function arcSyms(n,s,ang,span,R){const out=[];n=Math.min(n,18);const per=6;for(let i=0;i<n;i++){const row=Math.floor(i/per),inRow=Math.min(per,n-row*per),k=i%per,fr=inRow===1?.5:k/(inRow-1),a=ang+(fr-.5)*span,r=R*(.72-.2*row);out.push({s,x:Math.cos(a)*r,y:Math.sin(a)*r});}return out;}
+
+/* ---------- state ---------- */
+let conds=[],rods=[],cloth=null,finger=null,wires=[],scene=null,rubAcc=0,rubDone=false,toastT=0;
+let rodMat='پلاستیک',clothMat='پشم';
+
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3600);}
+function burst(x,y,col){snd(700+Math.random()*500,.07);for(let i=0;i<9;i++){const g=mk('g',{transform:'translate('+x+','+y+')'},L.fx);const c=mk('circle',{r:3+Math.random()*3,fill:col||'#ffd23f'},g);const a=Math.random()*6.28,d=25+Math.random()*35;
+  const an=c.animate([{transform:'translate(0px,0px)',opacity:1},{transform:'translate('+Math.cos(a)*d+'px,'+Math.sin(a)*d+'px)',opacity:0}],{duration:600+Math.random()*300});an.onfinish=()=>g.remove();}}
+function fly(x1,y1,x2,y2,delay){const g=mk('g',{},L.fx);mk('circle',{r:7,fill:'#3ad1ff',stroke:'#fff','stroke-width':1.2},g);const t=mk('text',{'text-anchor':'middle','dominant-baseline':'central','font-size':7,'font-weight':800,fill:'#003'},g);t.textContent='e⁻';
+  const an=g.animate([{transform:'translate('+x1+'px,'+y1+'px)',opacity:0},{opacity:1,offset:.15},{transform:'translate('+x2+'px,'+y2+'px)',opacity:1,offset:.85},{transform:'translate('+x2+'px,'+y2+'px)',opacity:0}],{duration:800,delay:delay||0,fill:'both'});an.onfinish=()=>g.remove();}
+
+/* ---------- drag ---------- */
+function makeDrag(el,it,opt){
+  opt=opt||{};el.style.cursor='grab';el.style.touchAction='none';
+  el.addEventListener('pointerdown',e=>{e.preventDefault();try{el.setPointerCapture(e.pointerId);}catch(_){}const p=toSVG(e);it.off={x:it.x-p.x,y:it.y-p.y};it.dragging=true;it.tx=null;selectItem(it);it.mv0=0;clearTimeout(it.lp);it.lp=setTimeout(()=>{if(curScene.tab==='free'&&it.dragging&&it.mv0<8&&it!==finger){openFloat(it,e.clientX,e.clientY);}},700);el.style.cursor='grabbing';});
+  el.addEventListener('pointermove',e=>{if(!it.dragging)return;const p=toSVG(e);let nx=p.x+it.off.x,ny=p.y+it.off.y;if(opt.xonly)ny=it.y;nx=clamp(nx,opt.minx||25,opt.maxx||W-25);ny=clamp(ny,25,H-10);if(opt.constrain)nx=opt.constrain(nx);if(opt.constrain2){const r=opt.constrain2(nx,ny);nx=r[0];ny=r[1];}it.mv0=(it.mv0||0)+Math.hypot(nx-it.x,ny-it.y);it.mv=(it.mv||0)+Math.hypot(nx-it.x,ny-it.y);it.x=nx;it.y=ny;});
+  const up=()=>{clearTimeout(it.lp);if(!it.dragging)return;it.dragging=false;el.style.cursor='grab';};
+  el.addEventListener('contextmenu',e=>{e.preventDefault();});
+  el.addEventListener('dblclick',()=>{if(curScene.tab!=='free')return;const q=conds.includes(it)?it.Q:(rods.includes(it)||it===cloth)?it.q:null;if(q===null)return;setCharge(it,q>.5?-8:q<-.5?0:8);});
+  el.addEventListener('pointerup',up);el.addEventListener('pointercancel',up);
+}
+function ballPush(c,nx,ny){const R=c.R;
+  for(let k=0;k<4;k++){
+    conds.forEach(o=>{if(o===c)return;
+      const m=R+(o.type==='sphere'?o.R:24),dx=nx-o.cx,dy=ny-o.cy,d=Math.hypot(dx,dy);
+      if(d<m){if(d<.01)ny-=m;else{nx=o.cx+dx/d*m;ny=o.cy+dy/d*m;}}
+      if(o.type==='scope'){const px=clamp(nx,o.cx-JW,o.cx+JW),py=clamp(ny,TY-JT,TY),ex=nx-px,ey=ny-py,dd=Math.hypot(ex,ey);
+        if(dd<R){if(dd>.01){nx=px+ex/dd*R;ny=py+ey/dd*R;}else ny=TY-JT-R;}}
+    });
+    nx=clamp(nx,60,940);}
+  return [nx,ny];}
+function moveBall(c,nx,ny){const rest=TY-80-c.R,top=48;let r=[nx,clamp(ny,top,rest)];
+  for(let k=0;k<2;k++){r=ballPush(c,r[0],r[1]);r[1]=clamp(r[1],top,rest);}
+  c.lift=rest-r[1];return r;}
+function collide(c,nx){conds.forEach(o=>{if(o===c)return;let need;
+  if(o.type==='scope')need=144;
+  else{const R=o.R,dyc=o.cy-c.cy,rd=Math.max(0,(TY-JT)-o.cy,o.cy-TY);let n1=0,n2=0;
+    if(Math.abs(dyc)<R+24)n1=Math.sqrt((R+24)*(R+24)-dyc*dyc);
+    if(rd<R)n2=JW+Math.sqrt(R*R-rd*rd);need=Math.max(n1,n2);}
+  if(need>0&&Math.abs(nx-o.x)<need)nx=o.x+(c.x>=o.x?1:-1)*need;});return nx;}
+
+/* ---------- builders ---------- */
+function addSphere(name,x,Q,Ru,grad){
+  const c={type:'sphere',name,x,Q,Qd:Q,h:0,hd:0,Ru,grad,dx:-1,dy:0,dQ:0,ang:0,R:54,cx:x,cy:0,wR:54,lift:0,y:TY-134};
+  const g=mk('g',{},L.cond);c.g=g;
+  c.stand=mk('rect',{x:-8,width:16,fill:'url(#gInsul)',stroke:'var(--ink)','stroke-opacity':.35},g);
+  c.base=mk('rect',{x:-40,width:80,height:9,rx:4,fill:'var(--insul)',stroke:'var(--ink)','stroke-opacity':.4},g);
+  c.halo=mk('circle',{fill:'none','stroke-width':10},g);
+  c.body=mk('circle',{fill:'url(#'+grad+')',stroke:'rgba(0,0,0,.4)','stroke-width':1.5},g);
+  c.shine=mk('ellipse',{fill:'rgba(255,255,255,.55)'},g);
+  c.pn=new PG(g,1,0,0);c.pf=new PG(g,1,0,0);
+  c.label=mk('text',{'text-anchor':'middle',class:'lbl'},g);
+  makeDrag(g,c,{minx:60,maxx:940,constrain2:(nx,ny)=>moveBall(c,nx,ny)});
+  conds.push(c);return c;
+}
+function addScope(name,x,Q){
+  const c={type:'scope',name,x,Q,Qd:Q,h:0,hd:0,dx:-1,dy:0,dQ:0,ang:0,R:24,cx:x,cy:TY-196,wR:36,y:TY-196};
+  const g=mk('g',{},L.cond);c.g=g;
+  mk('rect',{x:-84,y:-9,width:168,height:9,rx:4,fill:'var(--insul)',stroke:'var(--ink)','stroke-opacity':.4},g);
+  mk('path',{d:'M -64 -150 L -64 -24 Q -64 -9 -49 -9 L 49 -9 Q 64 -9 64 -24 L 64 -150 Z',fill:'url(#gJar)',stroke:'var(--ink)','stroke-opacity':.5,'stroke-width':2},g);
+  mk('rect',{x:-16,y:-162,width:32,height:24,rx:4,fill:'#b07a45',stroke:'rgba(0,0,0,.4)'},g);
+  mk('line',{x1:0,y1:-176,x2:0,y2:-58,stroke:'#8d96a3','stroke-width':5,'stroke-linecap':'round'},g);
+  c.lo=mk('line',{stroke:'#7a5c0c','stroke-width':9,'stroke-linecap':'round'},g);c.ro=mk('line',{stroke:'#7a5c0c','stroke-width':9,'stroke-linecap':'round'},g);
+  c.ll=mk('line',{stroke:'#ffd24d','stroke-width':5,'stroke-linecap':'round'},g);c.rl=mk('line',{stroke:'#ffd24d','stroke-width':5,'stroke-linecap':'round'},g);
+  mk('circle',{cx:0,cy:-58,r:4,fill:'#6b7480'},g);
+  c.halo=mk('circle',{cx:0,cy:-196,r:30,fill:'none','stroke-width':8},g);
+  mk('circle',{cx:0,cy:-196,r:24,fill:'url(#mS)',stroke:'rgba(0,0,0,.4)','stroke-width':1.5},g);
+  mk('ellipse',{cx:-8,cy:-205,rx:8,ry:5,fill:'rgba(255,255,255,.6)'},g);
+  c.pk=new PG(g,.8,0,-196);c.pl=new PG(g,.8,0,-58);c.pr=new PG(g,.8,0,-58);c.pl.rate=c.pr.rate=.35;
+  c.label=mk('text',{x:0,y:44,'text-anchor':'middle',class:'lbl'},g);
+  g.setAttribute('transform','translate('+x+','+TY+')');
+  makeDrag(g,c,{xonly:true,minx:130,maxx:940,constrain:nx=>collide(c,nx)});
+  conds.push(c);return c;
+}
+function addRod(type,x,y,mat){
+  const r={type,x,y,hx:x,hy:y,ang:-50,len:190,pad:9,touch:{},mat:mat||null};
+  r.q0=type==='glass'?8:type==='plastic'?-8:type==='mystery'?(Math.random()<.5?8:-8):0;r.q=r.q0;r.hidden=type==='mystery';
+  const g=mk('g',{},L.item);r.g=g;
+  r.body=mk('g',{},g);r.rect=mk('rect',{x:-95,y:-9,width:190,height:18,rx:9,stroke:'var(--ink)','stroke-opacity':.5,'stroke-width':1.5},r.body);
+  r.pat=mk('rect',{x:-95,y:-9,width:190,height:18,rx:9,fill:'none'},r.body);mk('rect',{x:-85,y:-6,width:170,height:5,rx:2.5,fill:'rgba(255,255,255,.4)'},r.body);
+  r.body.setAttribute('transform','rotate('+r.ang+')');
+  r.pg=new PG(g,.8,0,0);
+  r.q_=mk('text',{x:0,y:0,'text-anchor':'middle','dominant-baseline':'central','font-size':26,'font-weight':800,fill:'#fff',stroke:'rgba(0,0,0,.5)','stroke-width':3,'paint-order':'stroke'},g);r.q_.textContent='؟';
+  r.lab=mk('text',{x:0,y:98,'text-anchor':'middle',class:'lbl','font-size':13},g);
+  makeDrag(g,r);rods.push(r);rodStyle(r);return r;
+}
+function rodStyle(r){
+  let f=r.type==='glass'?'url(#gGlass)':r.type==='plastic'?'url(#gPlastic)':r.type==='mystery'?'url(#gMystery)':(MATC[r.mat]||'#aaa');
+  r.rect.setAttribute('fill',f);r.pat.setAttribute('fill',r.type==='mat'&&PAT[r.mat]?'url(#'+PAT[r.mat]+')':'none');
+  r.name=r.type==='glass'?'میله شیشه‌ای':r.type==='plastic'?'میله پلاستیکی':r.type==='mystery'?'میله ناشناخته':'میله '+r.mat;
+}
+function addCloth(mat,x,y){
+  const c={x,y,mat,q:0,q0:0};const g=mk('g',{},L.item);c.g=g;
+  const D='M-74 -40Q-38 -56 0 -42T76 -40Q84 -2 74 44Q36 58 0 44T-76 46Q-86 4 -74 -40Z';
+  for(let i=0;i<9;i++)mk('line',{x1:-62+i*15,y1:46,x2:-60+i*15,y2:57,stroke:'rgba(0,0,0,.35)','stroke-width':2.5,'stroke-linecap':'round'},g);
+  c.rect=mk('path',{d:D,stroke:'var(--ink)','stroke-opacity':.5,'stroke-width':1.5,'stroke-linejoin':'round'},g);
+  c.pat=mk('path',{d:D},g);mk('path',{d:D,fill:'url(#gSheen)'},g);
+  mk('path',{d:'M-30 -38Q-18 0 -34 40M20 -36Q34 2 18 42',fill:'none',stroke:'rgba(0,0,0,.18)','stroke-width':3,'stroke-linecap':'round'},g);
+  mk('path',{d:'M-64 -30Q-36 -44 0 -32T66 -30Q74 0 64 36Q34 48 0 34T-66 36Q-76 4 -64 -30Z',fill:'none',stroke:'rgba(255,255,255,.75)','stroke-dasharray':'6 5','stroke-width':2},g);
+  c.pg=new PG(g,.8,0,0);
+  c.lab=mk('text',{x:0,y:80,'text-anchor':'middle',class:'lbl','font-size':13},g);
+  c.bar=mk('rect',{x:-50,y:-72,width:100,height:7,rx:3.5,fill:'rgba(0,0,0,.35)',opacity:0},g);c.fill=mk('rect',{x:-50,y:-72,width:0,height:7,rx:3.5,fill:'#3ad18a',opacity:0},g);
+  makeDrag(g,c);cloth=c;clothStyle(c);return c;
+}
+function clothStyle(c){c.rect.setAttribute('fill',MATC[c.mat]||'#ccc');c.pat.setAttribute('fill',PAT[c.mat]?'url(#'+PAT[c.mat]+')':'none');c.name='پارچه '+c.mat;}
+function addFinger(){
+  const f={x:905,y:588};const g=mk('g',{},L.item);f.g=g;mk('circle',{r:34,fill:'transparent'},g);
+  const t=mk('text',{'text-anchor':'middle','dominant-baseline':'central','font-size':62},g);t.textContent='☝️';t.setAttribute('y',2);
+  mk('text',{y:46,'text-anchor':'middle',class:'lbl','font-size':12},g).textContent='انگشت (زمین)';
+  makeDrag(g,f);finger=f;return f;
+}
+function addWire(anchor,px,py,color,name){
+  const w={anchor,x:px,y:py,px,py,att:null,tx:null,color,park:{x:px,y:py},name,flows:[],prev:null};
+  w.sh=mk('path',{fill:'none',stroke:'rgba(0,0,0,.28)','stroke-width':8,'stroke-linecap':'round'},L.wire);
+  w.p=mk('path',{fill:'none',stroke:color,'stroke-width':5,'stroke-linecap':'round'},L.wire);
+  w.hl=mk('path',{fill:'none',stroke:'rgba(255,255,255,.4)','stroke-width':1.6,'stroke-linecap':'round'},L.wire);
+  w.fl=mk('g',{},L.wire);
+  const g=mk('g',{},L.item);w.g=g;mk('circle',{r:30,fill:'transparent'},g);
+  const j=mk('g',{},g);w.j=j;
+  mk('rect',{x:-4,y:-10,width:34,height:20,rx:6,fill:color,stroke:'rgba(0,0,0,.5)'},j);
+  mk('path',{d:'M-4,-9 L-26,-3 L-26,3 L-4,9 Z',fill:'#d2d7de',stroke:'rgba(0,0,0,.55)','stroke-width':1.2},j);
+  for(let i=-1;i<=1;i++)mk('line',{x1:-26,y1:i*3,x2:-14,y2:i*3,stroke:'rgba(0,0,0,.45)','stroke-width':1},j);
+  makeDrag(g,w);wires.push(w);return w;
+}
+function anchorPt(w){if(w.anchor==='ground')return {x:GX,y:GY-20};return {x:w.anchor.cx,y:w.anchor.cy-w.anchor.R};}
+
+/* ---------- scenes ---------- */
+function rodSet(){addRod('glass',105,310);addRod('plastic',200,300);addRod('mystery',295,310);}
+function baseTools(){addFinger();addWire('ground',150,590,'#2d2d33','سیم زمین').def=true;}
+const SC=[
+ {tab:'rub',name:'مالش دو جسم',title:'🧤 روش مالش',goal:'دو جسم خنثی و جدا از هم را به هم می‌مالیم. بر اساس سری تریبوالکتریک، جسمی که در سری بالاتر (مثبت‌تر) است الکترون از دست می‌دهد و بار مثبت می‌گیرد و جسم دیگر الکترون می‌گیرد و منفی می‌شود. فقط پروتون‌ها جابه‌جا نمی‌شوند!',
+  steps:['از کادر «انتخاب جنس‌ها» جنس میله و پارچه را انتخاب کن.','میله را روی پارچه بکش و چند بار مالش بده تا نوار سبز پر شود.','ببین کدام جسم + و کدام − شد (الکترون‌ها از جسم مثبت به جسم منفی پرواز می‌کنند).','میله یا پارچه را به کلاهک الکتروسکوپ نزدیک کن و نوع بار را از روی برگه‌ها بفهم.','جنس‌ها را عوض کن و ببین نتیجه چطور تغییر می‌کند.'],
+  tip:'در مالش، دو جسم هم‌زمان بارهای مساوی و مخالف می‌گیرند. اگر هر دو هم‌جنس باشند، باری تولید نمی‌شود.',
+  build(){addScope('الکتروسکوپ',760,0);addRod('mat',190,285,rodMat);addCloth(clothMat,240,425);baseTools();rods[0].q0=0;
+    scene.afterBuild=()=>{};}},
+ {tab:'ind',name:'یک کره فلزی',title:'🧲 القای بار در یک کره',goal:'بارکردن کره رسانا بدون تماس مستقیم: بار القا‌شده همیشه مخالف بار میله است و میله هیچ بارش را از دست نمی‌دهد.',
+  steps:['یک میله را به کره نزدیک کن (دست نزن!). بارهای کره جابه‌جا می‌شوند: طرف نزدیک مخالف میله، طرف دور هم‌نام میله.','گیره‌ی سیم زمین را از پایین بردار و بیاور روی کره (یا با انگشت به کره دست بزن). الکترون‌ها از/به زمین می‌روند.','گیره/انگشت را بردار (اتصال زمین قطع شود) — بار کره ثابت می‌ماند.','حالا میله را دور کن: بار کره با علامت مخالف میله روی کره پخش می‌شود. 🎉'],
+  tip:'اگر میله را به کره بچسبانی روش «تماس» می‌شود و بار هم‌نام میله می‌گیرد، نه القا!',
+  build(){addSphere('کره A',640,0,10,'mA');rodSet();baseTools();}},
+ {tab:'ind',name:'دو کره چسبیده',title:'🧲 القا در دو کره‌ی چسبیده',goal:'دو کره‌ی رسانا که به هم چسبیده‌اند مثل یک جسم بزرگ رفتار می‌کنند. با القا و جدا کردن کره‌ها دو بار مخالف می‌سازیم.',
+  steps:['میله را به کره‌ی A نزدیک کن؛ بارها در دو کره جابه‌جا می‌شوند.','در همین حال که میله نزدیک است، کره‌ی B را به آرامی از A دور کن (بکش).','حالا میله را دور کن: A و B بارهای مساوی و مخالف دارند.','دوباره امتحان کن، این بار قبل از جدا کردن گیره‌ی زمین را روی A بگذار و ببین چه می‌شود!'],
+  tip:'کره‌ی نزدیک میله، بار مخالف میله می‌گیرد و کره‌ی دورتر، بار هم‌نام میله.',
+  build(){const a=addSphere('کره A',590,0,10,'mA');addSphere('کره B',590+108,0,10,'mB');rodSet();baseTools();}},
+ {tab:'ind',name:'الکتروسکوپ',title:'🔬 القا با الکتروسکوپ',goal:'الکتروسکوپ را به روش القا باردار کن. برگه‌های الکتروسکوپ هم‌نام باز می‌شوند و از هم دور می‌شوند.',
+  steps:['میله را به آرامی به کلاهک نزدیک کن؛ برگه‌ها باز می‌شوند (بارهای هم‌نام میله روی برگه‌ها می‌روند).','با انگشت یا سیم زمین کلاهک را به زمین وصل کن: برگه‌ها بسته می‌شوند.','اتصال زمین را قطع کن، سپس میله را دور کن.','برگه‌ها با بار مخالف میله باز می‌شوند. حالا میله دیگری را نزدیک کن: اگر برگه‌ها بیشتر باز شدند، هم‌نام‌اند!'],
+  tip:'اگر میله‌ی ناشناخته را نزدیک کلاهک باردار ببری و برگه‌ها بیشتر باز شوند بار میله هم‌نام الکتروسکوپ است. اگر ابتدا بسته و بعد باز شوند، بار مخالف است.',
+  build(){addScope('الکتروسکوپ',650,0);rodSet();baseTools();}},
+ {tab:'con',name:'دو کره',title:'🤝 باردار کردن به روش تماس',goal:'وقتی دو کره‌ی رسانا به هم تماس پیدا می‌کنند، بار در بین آن‌ها پخش می‌شود. کره‌های هم‌اندازه بار کل را مساوی تقسیم می‌کنند: q′ = (q₁ + q₂) / ۲',
+  steps:['کره‌ی A بار ‎−۸‎ دارد و B خنثی است. A را بکش و به B بچسبان.','ببین بارها چطور پخش می‌شوند (پس از تماس هر کدام −۴).','کره‌ها را از هم جدا کن؛ هر کدام بار خودش را نگه می‌دارد.','از «تنظیم اجسام» بارها را عوض کن و رابطه‌ی (q₁+q₂)/۲ را بررسی کن.','کره‌ای را به زمین وصل کن و ببین چه می‌شود.'],
+  tip:'در تماس، دو جسم بار هم‌نام می‌گیرند. اگر یکی از دو جسم نارسانا باشد اتفاقی نمی‌افتد.',
+  build(){addSphere('کره A',500,-8,10,'mA');addSphere('کره B',740,0,10,'mB');rodSet();baseTools();}},
+ {tab:'con',name:'الکتروسکوپ',title:'🤝 تماس میله با الکتروسکوپ',goal:'اگر میله‌ی باردار را به کلاهک بچسبانیم، بخشی از بار به الکتروسکوپ می‌رود و برگه‌ها با بار هم‌نام میله باز می‌مانند.',
+  steps:['یک میله را به کلاهک بچسبان (تماس).','میله را دور کن: برگه‌ها همچنان باز می‌مانند چون الکتروسکوپ باردار شده است.','میله‌ی مخالف را نزدیک کن؛ برگه‌ها بسته می‌شوند (نوع بار را تشخیص بده!).','برای خنثی کردن، انگشت را به کلاهک بزن.'],
+  tip:'بار الکتروسکوپ با روش تماس هم‌نام بار میله است؛ با روش القا مخالف.',
+  build(){addScope('الکتروسکوپ',650,0);rodSet();baseTools();}},
+ {tab:'con',name:'سه کره',title:'🤝 تماس چند کره',goal:'کره‌ها را پشت سر هم به هم تماس بده و تقسیم بار را ببین.',
+  steps:['A بار ‎+۱۲‎ دارد و B و C خنثی‌اند.','A را به B بچسبان و جدا کن (هر کدام ‎+۶‎).','حالا B را به C بچسبان و جدا کن (هر کدام ‎+۳‎).','A و C را به هم تماس بده و جمع بارها را با قانون پایستگی بار بررسی کن.'],
+  tip:'جمع جبری بارها همیشه ثابت می‌ماند (قانون پایستگی بار).',
+  build(){addSphere('کره A',430,12,8,'mA');addSphere('کره B',620,0,8,'mB');addSphere('کره C',810,0,8,'mC');baseTools();}},
+ {tab:'sph',name:'کره‌ها و سیم',title:'🔗 دو کره‌ی وصل‌شده با سیم',goal:'وقتی دو کره‌ی رسانا با سیم به هم وصل شوند بار بین آن‌ها طوری پخش می‌شود که بار هر کره متناسب با شعاعش باشد. (شعاع برابر ⟵ بار برابر)',
+  steps:['از «تنظیم اجسام» بار و شعاع کره‌ها را تعیین کن (یا یکی از مثال‌های آماده را بزن).','گیره‌ی سیم نارنجی را روی کره‌ی B بگذار (یا دکمه‌ی «وصل/قطع سیم» را بزن).','نقطه‌های آبی (الکترون‌ها) را ببین که روی سیم حرکت می‌کنند.','بارهای نهایی را با q′₁ = (q₁+q₂)·R₁/(R₁+R₂) مقایسه کن.'],
+  tip:'جهت حرکت الکترون‌ها از کره‌ی منفی‌تر به کره‌ی مثبت‌تر است؛ جهت جریان قراردادی برعکس آن.',
+  build(){const a=addSphere('کره A',420,8,10,'mA');const b=addSphere('کره B',700,-12,10,'mB');baseTools();
+    const w=addWire(a,560,250,'#ff8a3d','سیم رسانا');w.target=b;w.park={x:560,y:250};},
+  extra:[{t:'🔌 وصل/قطع سیم',f(){const w=wires.find(x=>x.anchor!=='ground');if(!w)return;if(w.att){w.tx=w.park.x;w.ty=w.park.y;}else{const b=w.target;w.tx=b.cx;w.ty=b.cy-b.R-6;}}},
+         {t:'مثال: ‎+۸ و ‎−۱۲ هم‌شعاع',f(){const[a,b]=conds;a.Ru=b.Ru=10;a.Q=8;b.Q=-12;}},
+         {t:'مثال: ‎−۸ (R=۱۲) و ‎−۱۲ (R=۴)',f(){const[a,b]=conds;a.Ru=12;b.Ru=4;a.Q=-8;b.Q=-12;}}]}
+,{tab:'sph',name:'چند کره',title:'⚪ چند کره‌ی به‌هم‌چسبیده',goal:'کره‌های رسانا که به هم می‌چسبند یا با سیم وصل‌اند مثل یک جسم‌اند: جمع بارها ثابت می‌ماند و بار به نسبت شعاع پخش می‌شود: qᵢ′ = Q_کل × Rᵢ / ΣR',
+ steps:['شعاع و بار هر کره را از «تنظیم اجسام» عوض کن (کره بزرگ‌تر بار بیشتری می‌گیرد).','«🔗 چسباندن همه» کره‌ها را به هم می‌چسباند و بار پخش می‌شود.','«✂️ جدا کردن» کره‌ها را دور می‌کند؛ هر کره بار خودش را نگه می‌دارد.','با «➕ کره» تا ۵ کره بساز و جمع بارها را قبل و بعد مقایسه کن.'],
+ tip:'می‌توانی کره‌ها را با ماوس هم بکشی و بچسبانی؛ هر وقت لمس شوند بار تقسیم می‌شود.',
+ build(){[[-10,6],[14,9],[0,4],[-6,7]].forEach((v,i)=>addSphere('کره '+'ABCDE'[i],380+i*140,v[0],v[1],['mA','mB','mC','mA'][i]));baseTools();},
+ extra:[{t:'➕ کره',f(){addMore();}},{t:'➖ حذف کره',f(){delSphere();}},{t:'🔗 چسباندن همه',f(){joinAll();}},{t:'✂️ جدا کردن',f(){splitAll();}}]}
+,{tab:'cou',name:'قانون کولن',title:'⚖️ قانون کولن',goal:'نیروی بین دو بار نقطه‌ای با حاصل‌ضرب اندازه‌ی بارها متناسب و با مجذور فاصله وارونه است: F = k·|q₁|·|q₂| / r².  جاذبه برای بارهای ناهمنام، دافعه برای هم‌نام.',
+ steps:['بار دو کره را (بر حسب نانوکولن) از «تنظیم اجسام» عوض کن.','کره‌ها را بکش و فاصله را تغییر بده؛ فلش‌ها بزرگی و جهت نیرو را نشان می‌دهند.','فاصله را دو برابر کن و ببین نیرو یک‌چهارم می‌شود.','در کادر «قانون کولن» جایگذاری عددی را دنبال کن.'],
+ tip:'مقیاس: هر ۱۰ واحد روی صفحه = ۱ سانتی‌متر. اگر کره‌ها بچسبند بارشان تقسیم می‌شود!',
+ build(){addSphere('کره A',430,10,5,'mA');addSphere('کره B',700,-10,5,'mB');baseTools();}}
+,{tab:'free',name:'آزاد',title:'🧪 آزمایشگاه آزاد',goal:'هر جسمی را از «جعبه‌ی اجسام» بکش و روی صحنه بنداز، بعد روی آن کلیک کن و بار (مثبت، منفی، خنثی)، جنس (موی انسان، پلاستیک، ابریشم...) و اندازه‌اش را خودت تعیین کن.',
+ steps:['جسمی را از جعبه بکش و روی صحنه رها کن (یا فقط کلیک کن).','روی جسم کلیک کن تا انتخاب شود (حلقه‌ی زرد)؛ در کادر «ویژگی‌ها» بار و جنس را تعیین کن.','میله را روی پارچه بمال تا بر اساس جنس‌ها باردار شوند.','میله را به کره یا الکتروسکوپ نزدیک کن؛ سیم زمین و انگشت را هم امتحان کن.','کره را به بالا بکش و به کلاهک الکتروسکوپ یا کره‌ی دیگر بزن؛ در لحظه‌ی تماس بار تقسیم می‌شود.','پارچه را روی کلاهک الکتروسکوپ بمال تا کلاهک باردار شود. اگر بار میله یا پارچه خالی شد (انگشت یا رطوبت)، دوباره مالشش بده.','چرخ ماوس: روی کره = تغییر اندازه، روی میله = چرخاندن. کلیدهای + − ۰ بار را عوض می‌کنند و Delete جسم را حذف می‌کند.'],
+ tip:'القا: میله ← نزدیک کره ← سیم زمین ← قطع سیم ← دور کردن میله. | تنظیمات کامل: نگه‌داشتن روی جسم | حذف: کلیک راست یا Delete | دابل‌کلیک: چرخش بار | Ctrl+D: کپی | فلش‌ها: جابه‌جایی',
+ build(){baseTools();const sv=noPre?null:loadSaved();if(sv)restoreFree(sv);else if(!noPre)preset();noPre=false;},
+ extra:[{t:'🎬 چیدمان نمونه',f(){preset();}},{t:'🧹 پاک کردن صحنه',sure:true,f(){noPre=true;skipSave=true;loadScene(curScene);}},{t:'⚪ خنثی کردن همه',f(){conds.forEach(c=>c.Q=0);rods.forEach(r=>{r.q=r.q0=0;});if(cloth)cloth.q=0;}}]}
+];
+const TABS=[['free','🧪 آزمایشگاه (مالش، القا، تماس و ...)'],['cou','⚖️ کولن'],['quiz','📚 بانک سوال']];
+let curTab='rub',curScene=null;
+
+function buildTabs(){
+  const t=$('#tabs');t.innerHTML='';TABS.forEach(([k,n])=>{const b=document.createElement('button');b.className='tab'+(k===curTab?' on':'');b.textContent=n;b.onclick=()=>{if(k==='quiz'){openQuiz();return;}curTab=k;buildTabs();loadScene(SC.find(s=>s.tab===k));};t.appendChild(b);});
+  const s=$('#subs');s.innerHTML='';const list=SC.filter(x=>x.tab===curTab);if(list.length>1)list.forEach(x=>{const b=document.createElement('button');b.className='chip'+(x===curScene?' on':'');b.textContent=x.name;b.onclick=()=>loadScene(x);s.appendChild(b);});
+}
+function loadScene(sc){if(!skipSave)saveFree();skipSave=false;
+  curScene=sc;scene=sc;sel=null;$('#cPal').style.display=$('#cProp').style.display=sc.tab==='free'?'block':'none';curTab=sc.tab;$('#labSec').style.display='';$('#side').style.display='';$('#qb').style.display='none';
+  [L.cond,L.wire,L.item,L.fx].forEach(l=>{while(l.firstChild)l.removeChild(l.firstChild);});
+  conds=[];rods=[];cloth=null;finger=null;wires=[];rubAcc=0;rubDone=false;tp={};
+  sc.build();
+  conds.forEach(c=>{c.Qd=c.Q;});
+  $('#sTitle').textContent=sc.title;$('#sGoal').textContent=sc.goal;$('#sTip').textContent='💡 '+sc.tip;
+  $('#sSteps').innerHTML=sc.steps.map(s=>'<li>'+s+'</li>').join('');
+  const ex=$('#extra');ex.innerHTML='';(sc.extra||[]).forEach(e=>{const b=document.createElement('button');b.className='btn';b.textContent=e.t;if(e.sure)arm(b,e.f);else b.onclick=e.f;ex.appendChild(b);});
+  if(rods.some(r=>r.type==='mystery')){const b=document.createElement('button');b.className='btn';b.textContent='👁️ نشان‌دادن بار میله‌ی ناشناخته';b.onclick=()=>{const r=rods.find(x=>x.type==='mystery');r.hidden=!r.hidden;};ex.appendChild(b);}
+  $('#cSeries').style.display=sc.tab==='rub'?'block':'none';
+  $('#bRecharge').textContent=sc.tab==='rub'?'🧽 خنثی کردن دو جسم':'🔋 شارژ دوباره میله‌ها';
+  $('#bRecharge').style.display=sc.tab==='sph'||sc.tab==='cou'||sc.tab==='free'||sc.name==='سه کره'||sc.name==='دو کره'&&sc.tab==='con'?'none':'inline-block';
+  buildSliders();buildProp();if(sc.tab==='rub')buildSeries();if(sc.tab==='free')saveFree();
+  buildTabs();
+}
+$('#bReset').onclick=()=>{if(curScene.tab!=='free'){loadScene(curScene);return;}const b=$('#bReset');
+  if(b.dataset.arm){clearTimeout(b._t);b.dataset.arm='';b.textContent='🔄 از نو';clearFree();skipSave=true;loadScene(curScene);}
+  else{b.dataset.arm='1';b.textContent='⚠️ همه‌ی اجسام پاک شود؟ دوباره بزن';b._t=setTimeout(()=>{b.dataset.arm='';b.textContent='🔄 از نو';},3000);}};
+$('#bRecharge').onclick=()=>{if(curScene.tab==='rub'){neutral();}else rods.forEach(r=>{r.q=r.q0;});};
+function neutral(){rods.forEach(r=>{r.q=0;r.done=false;r.acc=0});if(cloth)cloth.q=0;}
+
+/* ---------- panels ---------- */
+function buildSliders(){
+  const box=$('#ctl');box.innerHTML='';$('#cCtl').style.display=curScene.tab==='rub'?'none':'block';
+  conds.forEach(c=>{
+    const q=document.createElement('div');q.className='sl';q.innerHTML='<span>بار '+c.name+'</span><input type="range" min="-20" max="20" step="1"><b dir="ltr"></b>';
+    const inp=q.querySelector('input'),b=q.querySelector('b');inp.value=Math.round(c.Q);c.sq=inp;c.sqv=b;
+    inp.oninput=()=>{c.Q=+inp.value;};box.appendChild(q);
+    if(c.type==='sphere'){const r=document.createElement('div');r.className='sl';r.innerHTML='<span>شعاع '+c.name+'</span><input type="range" min="2" max="12" step="1"><b dir="ltr"></b>';
+      const i2=r.querySelector('input'),b2=r.querySelector('b');i2.value=c.Ru;c.sr=i2;c.srv=b2;i2.oninput=()=>{c.Ru=+i2.value;};box.appendChild(r);}
+  });
+}
+function buildSeries(){
+  const a=$('#selRod'),b=$('#selCloth');a.innerHTML=b.innerHTML=SERIES.map(s=>'<option>'+s+'</option>').join('');a.value=rodMat;b.value=clothMat;
+  a.onchange=()=>{rodMat=a.value;rods[0].mat=rodMat;rodStyle(rods[0]);neutral();drawSeries();};
+  b.onchange=()=>{clothMat=b.value;cloth.mat=clothMat;clothStyle(cloth);neutral();drawSeries();};
+  drawSeries();
+}
+function drawSeries(){$('#series').innerHTML=SERIES.map(s=>'<div class="'+(s===rodMat?'a':s===clothMat?'b':'')+'"><span>'+s+'</span><span>'+(s===rodMat?'میله':s===clothMat?'پارچه':'')+'</span></div>').join('');}
+
+function statusHTML(){
+  let h='';
+  conds.forEach(c=>{
+    h+='<div class="row"><b>'+c.name+'</b><span dir="ltr">'+fmt(c.Q)+'</span>'+(c.grounded?'<em>⏚ به زمین وصل</em>':'')+'</div>';
+    if(c.type==='scope'){const ql=.85*(c.Qd+CC*c.hd);h+='<div class="row"><span>برگه‌ها</span><span>'+(c.ang<3?'بسته':'باز ('+fa(Math.round(c.ang))+'°)')+(c.ang>=3?(ql>0?' — بار +':' — بار −'):'')+'</span></div>';}
+  });
+  rods.forEach(r=>{h+='<div class="row"><span>'+r.name+'</span><span dir="ltr">'+(r.hidden?'؟':fmt(r.q))+'</span></div>';});
+  if(cloth)h+='<div class="row"><span>پارچه ('+cloth.mat+')</span><span dir="ltr">'+fmt(cloth.q)+'</span></div>';
+  const tot=conds.reduce((s,c)=>s+c.Q,0);if(conds.length>1)h+='<div class="row"><span>جمع بار اجسام</span><span dir="ltr">'+fmt(tot)+'</span></div>';
+  return h;
+}
+
+/* ---------- main loop ---------- */
+let fr=0;
+function frame(){
+  requestAnimationFrame(frame);if(document.hidden)return;fr++;
+  if(!curScene)return;
+  /* geometry */
+  conds.forEach(c=>{if(c.type==='sphere'){c.R=18+3.6*c.Ru;c.lift=Math.min(c.lift||0,Math.max(0,TY-130-c.R));c.cx=c.x;c.cy=TY-80-c.R-c.lift;c.y=c.cy;c.wR=c.R;}else{c.cx=c.x;c.cy=TY-196;}});
+  const srcs=[];
+  rods.forEach(r=>{const a=r.ang*Math.PI/180,hx=Math.cos(a)*r.len/2,hy=Math.sin(a)*r.len/2;r.seg=[r.x-hx,r.y-hy,r.x+hx,r.y+hy];srcs.push({q:r.q,seg:r.seg,pad:r.pad});});
+  if(cloth)srcs.push({q:cloth.q,seg:[cloth.x,cloth.y,cloth.x,cloth.y],pad:44});
+  /* rod contact -> transfer */
+  rods.forEach(r=>{conds.forEach(c=>{const gap=distSeg(c.cx,c.cy,r.seg).d-c.R-r.pad;
+    if(gap<=1.5){if(!r.touch[c.name]){r.touch[c.name]=true;if(Math.abs(r.q)>.05){const amt=r.q*.5;c.Q+=amt;r.q-=amt;const p=distSeg(c.cx,c.cy,r.seg);burst(p.x,p.y,'#ffd23f');toast('تماس! نیمی از بار میله به '+c.name+' رفت و بار هم‌نام میله گرفت (روش تماس، نه القا).');}}}
+    else if(gap>12)r.touch[c.name]=false;});});
+  /* rubbing */
+  if((curScene.tab==='rub'||curScene.tab==='free')&&cloth){
+    const cmv=cloth.mv||0;cloth.mv=0;let best=0;
+    rods.forEach(rod=>{if(rod.type!=='mat')return;
+      const mv=(rod.mv||0)+cmv;rod.mv=0;const over=Math.hypot(rod.x-cloth.x,rod.y-cloth.y)<110;rod.acc=rod.acc||0;
+      if(over&&!rod.done&&mv>0){rod.acc+=mv;if(mv>3&&fr%7===0)burst(cloth.x+(Math.random()-.5)*90,cloth.y+(Math.random()-.5)*50,'#fff');}
+      if(!over&&!rod.done)rod.acc=Math.max(0,rod.acc-1.2);if(!over&&rod.done){rod.done=false;rod.acc=0;}
+      if(!rod.done)best=Math.max(best,rod.acc);
+      if(rod.acc>=450&&!rod.done){rod.done=true;const i1=SERIES.indexOf(rod.mat),i2=SERIES.indexOf(cloth.mat);
+        if(i1===i2)toast('هر دو جسم هم‌جنس‌اند؛ باری تولید نمی‌شود!');
+        else{const rp=i1<i2,nq=rp?8:-8;rod.q=nq;cloth.q=-nq;const A=rp?rod:cloth,B=rp?cloth:rod;
+          for(let i=0;i<8;i++)fly(A.x+(Math.random()-.5)*60,A.y+(Math.random()-.5)*30,B.x+(Math.random()-.5)*60,B.y+(Math.random()-.5)*30,i*90);
+          burst(cloth.x,cloth.y,'#fff');toast((rp?rod.mat:cloth.mat)+' الکترون از دست داد و مثبت شد؛ '+(rp?cloth.mat:rod.mat)+' الکترون گرفت و منفی شد.');}}
+    });
+    conds.forEach(c=>{if(c.type!=='scope')return;const ov=Math.hypot(cloth.x-c.cx,cloth.y-c.cy)<75;
+      if(ov&&cmv>1&&!c.grounded){const i1=SERIES.indexOf(cloth.mat),i2=SERIES.indexOf(CAPM);
+        if(i1!==i2){const sg=i1<i2?-1:1,inc=Math.min(cmv*.012,.6);
+          if(Math.abs(c.Q+sg*inc)<=12){c.Q+=sg*inc;cloth.q=clamp(cloth.q-sg*inc,-20,20);
+            if(fr%6===0)burst(c.cx+(Math.random()-.5)*30,c.cy-10,'#fff');
+            if(!c.rubT||fr-c.rubT>300)toast('مالش '+cloth.mat+' روی کلاهک فلزی: کلاهک '+(sg>0?'مثبت':'منفی')+' می‌شود و پارچه بار مخالف می‌گیرد.');c.rubT=fr;}}}});
+    const sh=best>2;cloth.bar.setAttribute('opacity',sh?1:0);cloth.fill.setAttribute('opacity',sh?1:0);cloth.fill.setAttribute('width',clamp(best/450,0,1)*100);
+  }
+  /* finger discharge + humidity leakage */
+  if(finger){const tx=finger.x,ty=finger.y-30;rods.forEach(r=>{if(Math.abs(r.q)>.05&&r.seg&&distSeg(tx,ty,r.seg).d<42){r.q=0;r.done=false;r.acc=0;burst(tx,ty,'#3ad1ff');toast('با دست زدن به '+r.name+' بارش به بدن و زمین رفت و خنثی شد؛ دوباره می‌توانی مالش بدهی.');}});
+    if(cloth&&Math.abs(cloth.q)>.05&&Math.hypot(tx-cloth.x,ty-cloth.y)<60){cloth.q=0;burst(tx,ty,'#3ad1ff');toast('پارچه خنثی شد.');}}
+  if(hum){const k=hum===1?.0004:.0015;rods.forEach(r=>{r.q*=1-k;if(Math.abs(r.q)<.05)r.q=0;});if(cloth){cloth.q*=1-k;if(Math.abs(cloth.q)<.05)cloth.q=0;}conds.forEach(c=>{if(!c.grounded)c.Q*=1-k;});}
+  /* groups */
+  const n=conds.length,par=conds.map((_,i)=>i);par.push(n);
+  const find=i=>{while(par[i]!==i){par[i]=par[par[i]];i=par[i];}return i;};
+  const uni=(a,b)=>{a=find(a);b=find(b);if(a!==b)par[a]=b;};
+  for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){const a=conds[i],b=conds[j],t=Math.hypot(a.cx-b.cx,a.cy-b.cy)<=a.R+b.R+1.5;if(t)uni(i,j);
+    const k=a.name+'|'+b.name;if(k in tp&&t&&!tp[k]){const f=a.R/(a.R+b.R);burst(a.cx+(b.cx-a.cx)*f,a.cy+(b.cy-a.cy)*f,'#ffd23f');toast('تماس! '+a.name+' و '+b.name+' به هم رسیدند و بار بینشان تقسیم شد.');}tp[k]=t;}
+  /* wires */
+  wires.forEach(w=>{
+    if(w.tx!=null&&!w.dragging){w.x+=(w.tx-w.x)*.12;w.y+=(w.ty-w.y)*.12;if(Math.hypot(w.tx-w.x,w.ty-w.y)<1.5)w.tx=null;}
+    let best=null,bd=1e9;conds.forEach(c=>{if(c===w.anchor)return;const d=Math.hypot(w.x-c.cx,w.y-c.cy)-c.R,lim=(w.att===c)?42:24;if(d<=lim&&d<bd){best=c;bd=d;}});
+    if(best!==w.prev){if(best)toast(w.anchor==='ground'?'سیم زمین به '+best.name+' وصل شد.':'سیم بین '+w.anchor.name+' و '+best.name+' وصل شد.');else if(w.prev)toast('سیم از '+w.prev.name+' جدا شد'+(w.anchor==='ground'?' — بار روی جسم ثابت می‌ماند.':'.'));w.prev=best;}
+    w.att=best;
+    if(best){const a=Math.atan2(w.y-best.cy,w.x-best.cx);w.px=best.cx+Math.cos(a)*(best.R+4);w.py=best.cy+Math.sin(a)*(best.R+4);w.rot=Math.atan2(best.cy-w.py,best.cx-w.px)*180/Math.PI+180;
+      uni(w.anchor==='ground'?n:conds.indexOf(w.anchor),conds.indexOf(best));}
+    else{w.px=w.x;w.py=w.y;w.rot=0;}
+  });
+  /* finger */
+  if(finger){const tx=finger.x,ty=finger.y-30;conds.forEach((c,i)=>{const on=Math.hypot(tx-c.cx,ty-c.cy)<=c.R+10;if(on){uni(i,n);}if(on!==!!c.fOn){c.fOn=on;toast(on?'انگشت '+c.name+' را به زمین وصل کرد.':'انگشت از '+c.name+' دور شد — بار ثابت می‌ماند.');}});}
+  /* solve */
+  conds.forEach(c=>{c.h=0;let wx=0,wy=0;srcs.forEach(s=>{const f=prox(s,c);c.h+=s.q*f;const r=distSeg(c.cx,c.cy,s.seg),w=Math.abs(s.q)*f;if(w>0&&r.d>.1){wx+=w*(r.x-c.cx)/r.d;wy+=w*(r.y-c.cy)/r.d;}});
+    const m=Math.hypot(wx,wy);if(m>.05){c.dx+=(wx/m-c.dx)*.15;c.dy+=(wy/m-c.dy)*.15;}});
+  const groups={};conds.forEach((c,i)=>{const r=find(i);(groups[r]=groups[r]||[]).push(c);});
+  const gr=find(n);
+  Object.keys(groups).forEach(k=>{const mem=groups[k];const grounded=(+k===gr);mem.forEach(c=>c.grounded=grounded);
+    const ws=mem.reduce((s,c)=>s+c.wR,0);mem.forEach(c=>c.w=c.wR/ws);
+    const hbar=mem.reduce((s,c)=>s+c.w*c.h,0);
+    const Qtot=grounded?-CC*hbar:mem.reduce((s,c)=>s+c.Q,0);
+    const raw=mem.map(c=>-CC*1.6*c.h),sr=raw.reduce((a,b)=>a+b,0);
+    mem.forEach((c,i)=>{c.Q=c.w*Qtot+raw[i]-c.w*sr;});});
+  /* render conductors */
+  conds.forEach(c=>{
+    const old=c.Qd;c.Qd+=(c.Q-c.Qd)*.14;c.hd+=(c.h-c.hd)*.18;c.dQ=c.Qd-old;
+    if(c.fOn&&Math.abs(c.dQ)>.02&&Math.random()<Math.min(.5,Math.abs(c.dQ)*2.5)){const tx=finger.x,ty=finger.y-30;if(c.dQ>0)fly(c.cx,c.cy,tx,ty);else fly(tx,ty,c.cx,c.cy);}
+    const halo=c.halo;const hc=c.Qd>0?'var(--pos)':'var(--neg)';halo.setAttribute('stroke',hc);halo.setAttribute('opacity',clamp(Math.abs(c.Qd)/14,0,.75).toFixed(2));
+    if(c.type==='sphere'){
+      const R=c.R;c.g.setAttribute('transform','translate('+c.cx+','+c.cy+')');
+      c.body.setAttribute('r',R);halo.setAttribute('r',R+6);c.shine.setAttribute('cx',-R*.35);c.shine.setAttribute('cy',-R*.4);c.shine.setAttribute('rx',R*.25);c.shine.setAttribute('ry',R*.14);
+      const sh=TY-c.cy;c.stand.setAttribute('y',R-4);c.stand.setAttribute('height',Math.max(0,sh-R+4));c.base.setAttribute('y',sh-9);
+      c.label.setAttribute('y',sh+40);c.label.textContent=c.name+'  '+fmtI(c.Q);
+      const ang=Math.atan2(c.dy,c.dx),sc=clamp(R/62,.6,1);
+      const near=c.Qd/2-CC*c.hd/2,far=c.Qd/2+CC*c.hd/2;
+      c.pn.sc=c.pf.sc=sc;
+      c.pn.set(arcSyms(Math.round(Math.abs(near)),sgn(near)||1,ang,2.3,R));c.pf.set(arcSyms(Math.round(Math.abs(far)),sgn(far)||1,ang+Math.PI,2.3,R));
+      c.pn.step();c.pf.step();
+    }else{
+      const L_=.85,ql=L_*(c.Qd+CC*c.hd),qk=c.Qd-ql;
+      const tgt=Math.pow(Math.min(1,Math.abs(ql)/9),.7)*64;c.ang+=(tgt-c.ang)*.2;
+      const th=c.ang*Math.PI/180,len=58,px=0,py=-58,ex=Math.sin(th)*len,ey=py+Math.cos(th)*len;
+      c.ll.setAttribute('x1',px);c.ll.setAttribute('y1',py);c.ll.setAttribute('x2',-ex);c.ll.setAttribute('y2',ey);c.lo.setAttribute('x1',px);c.lo.setAttribute('y1',py);c.lo.setAttribute('x2',-ex);c.lo.setAttribute('y2',ey);
+      c.rl.setAttribute('x1',px);c.rl.setAttribute('y1',py);c.rl.setAttribute('x2',ex);c.rl.setAttribute('y2',ey);c.ro.setAttribute('x1',px);c.ro.setAttribute('y1',py);c.ro.setAttribute('x2',ex);c.ro.setAttribute('y2',ey);
+      const nk=Math.min(8,Math.round(Math.abs(qk))),sk=sgn(qk)||1,dk=[];
+      for(let i=0;i<nk;i++){if(nk===1)dk.push({s:sk,x:0,y:-196});else{const a=i*2*Math.PI/nk,r=nk>5?15:11;dk.push({s:sk,x:Math.cos(a)*r,y:-196+Math.sin(a)*r});}}
+      c.pk.set(dk);
+      const nl=Math.min(7,Math.round(Math.abs(ql)/2)),sl=sgn(ql)||1,dl=[],dr=[];
+      for(let i=0;i<nl;i++){const f=nl===1?.55:.18+.72*i/(nl-1),d=len*f;
+        dr.push({s:sl,x:Math.sin(th)*d+Math.cos(th)*12,y:py+Math.cos(th)*d-Math.sin(th)*12});dl.push({s:sl,x:-Math.sin(th)*d-Math.cos(th)*12,y:py+Math.cos(th)*d-Math.sin(th)*12});}
+      c.pl.set(dl);c.pr.set(dr);c.pk.step();c.pl.step();c.pr.step();
+      c.label.textContent=c.name+'  '+fmtI(c.Q);
+    }
+    if(c.sq&&document.activeElement!==c.sq){c.sq.value=Math.round(c.Q);}
+    if(c.sqv)c.sqv.textContent=fmt(c.Q).replace(' (خنثی)','');
+    if(c.sr&&document.activeElement!==c.sr){c.sr.value=c.Ru;}if(c.srv)c.srv.textContent=fa(c.Ru);
+  });
+  /* rods */
+  rods.forEach(r=>{
+    r.g.setAttribute('transform','translate('+r.x+','+r.y+')');r.body.setAttribute('transform','rotate('+r.ang+')');
+    const a=r.ang*Math.PI/180,nq=Math.min(10,Math.round(Math.abs(r.q))),des=[];
+    if(!r.hidden)for(let i=0;i<nq;i++){const t=((i+.5)/nq-.5)*r.len*.8;des.push({s:sgn(r.q),x:Math.cos(a)*t,y:Math.sin(a)*t});}
+    r.pg.set(des);r.pg.step();r.rect.style.filter=r.hidden?'none':glow(r.q);r.q_.style.display=r.hidden?'block':'none';
+    r.lab.textContent=r.name+(r.hidden?'':'  '+fmtI(r.q));
+  });
+  if(cloth){cloth.g.setAttribute('transform','translate('+cloth.x+','+cloth.y+')');
+    const nq=Math.min(10,Math.round(Math.abs(cloth.q))),des=[];for(let i=0;i<nq;i++){const col=i%5,row=Math.floor(i/5);des.push({s:sgn(cloth.q),x:(col-2)*22,y:row*30-15});}
+    cloth.pg.set(des);cloth.pg.step();cloth.rect.style.filter=glow(cloth.q);cloth.lab.textContent='پارچه '+cloth.mat+'  '+fmtI(cloth.q);}
+  if(finger)finger.g.setAttribute('transform','translate('+finger.x+','+finger.y+')');
+  /* wires */
+  wires.forEach(w=>{
+    const a=anchorPt(w),b={x:w.px,y:w.py};let d;
+    if(w.anchor==='ground')d='M'+a.x+','+a.y+' C'+a.x+','+(a.y-110)+' '+b.x+','+(b.y+110)+' '+b.x+','+b.y;
+    else d='M'+a.x+','+a.y+' C'+a.x+','+(a.y-110)+' '+b.x+','+(b.y-110)+' '+b.x+','+b.y;
+    w.sh.setAttribute('d',d);w.p.setAttribute('d',d);w.hl.setAttribute('d',d);
+    w.g.setAttribute('transform','translate('+w.px+','+w.py+')');w.j.setAttribute('transform','rotate('+(w.rot||0)+')');
+    /* electron flow */
+    const c=w.att;if(c&&Math.abs(c.dQ)>.015&&Math.random()<Math.min(.7,Math.abs(c.dQ)*4)){
+      const dot=mk('g',{},w.fl);mk('circle',{r:6,fill:'#3ad1ff',stroke:'#fff','stroke-width':1},dot);const tt=mk('text',{'text-anchor':'middle','dominant-baseline':'central','font-size':6,'font-weight':800,fill:'#003'},dot);tt.textContent='e⁻';
+      w.flows.push({el:dot,t:c.dQ>0?1:0,dir:c.dQ>0?-1:1});}
+    const L_=w.p.getTotalLength();
+    for(let i=w.flows.length-1;i>=0;i--){const f=w.flows[i];f.t+=f.dir*.014;if(f.t<0||f.t>1){f.el.remove();w.flows.splice(i,1);continue;}const p=w.p.getPointAtLength(f.t*L_);f.el.setAttribute('transform','translate('+p.x+','+p.y+')');}
+  });
+  if(curScene.tab==='free'){if(!selRing||!selRing.isConnected)selRing=mk('ellipse',{fill:'none',stroke:'#ffd23f','stroke-width':3,'stroke-dasharray':'8 6','pointer-events':'none'},L.fx);
+    let g=null;if(sel){if(conds.includes(sel))g=sel.type==='sphere'?[sel.cx,sel.cy,sel.R+14,sel.R+14]:[sel.cx,TY-100,100,120];else if(rods.includes(sel))g=[sel.x,sel.y,110,40];else if(sel===cloth)g=[sel.x,sel.y,92,70];else if(wires.includes(sel))g=[sel.px,sel.py,34,34];}
+    selRing.style.display=g?'':'none';if(g){['cx','cy','rx','ry'].forEach((k,i)=>selRing.setAttribute(k,g[i]));}}
+  coulombUI(fr%8===0);
+  if(fr%8===0)$('#status').innerHTML=statusHTML();
+}
+
+function joinAll(){const s=conds.filter(c=>c.type==='sphere').sort((a,b)=>a.x-b.x);let x=330;s.forEach((c,i)=>{if(i){const p=s[i-1],dy=c.cy-p.cy,t=p.R+c.R;x=p.x+Math.sqrt(Math.max(0,t*t-dy*dy))-.5;}c.x=x;});}
+function splitAll(){const s=conds.filter(c=>c.type==='sphere').sort((a,b)=>a.x-b.x);s.forEach((c,i)=>{c.x=340+i*(600/Math.max(1,s.length-1));});}
+function addMore(){const n=conds.filter(c=>c.type==='sphere').length;if(n>=5)return toast('حداکثر ۵ کره');const c=addSphere('کره '+'ABCDE'[n],900,0,6,['mA','mB','mC','mA','mB'][n]);buildSliders();splitAll();}
+function delSphere(){const s=conds.filter(c=>c.type==='sphere');if(s.length<=2)return;const c=s[s.length-1];c.g.remove();conds.splice(conds.indexOf(c),1);buildSliders();splitAll();}
+let cArr=null;
+const sup=n=>String(n).replace('-','⁻').replace(/\d/g,d=>'⁰¹²³⁴⁵⁶⁷⁸⁹'[d]);
+const sci=v=>{if(!(v>0))return '۰';const e=Math.floor(Math.log10(v));return fa((v/Math.pow(10,e)).toFixed(2))+'×۱۰'+sup(e);};
+function arrowD(x1,y1,x2,y2){const a=Math.atan2(y2-y1,x2-x1),h=14;return 'M'+x1+' '+y1+'L'+x2+' '+y2+'M'+x2+' '+y2+'L'+(x2-Math.cos(a-.5)*h)+' '+(y2-Math.sin(a-.5)*h)+'M'+x2+' '+y2+'L'+(x2-Math.cos(a+.5)*h)+' '+(y2-Math.sin(a+.5)*h);}
+function coulombUI(upd){
+  const sp=conds.filter(c=>c.type==='sphere'),card=$('#cCoul');
+  if(sp.length<2){card.style.display='none';if(cArr&&cArr[0].isConnected)cArr.forEach(p=>p.setAttribute('d',''));return;}card.style.display='block';
+  const a=sp[0],b=sp[1],d=Math.hypot(a.cx-b.cx,a.cy-b.cy),rcm=Math.max(d/10,.5),r=rcm/100;
+  const q1=Math.abs(a.Q),q2=Math.abs(b.Q),F=9e9*q1*q2*1e-18/(r*r),att=a.Q*b.Q<0;
+  if(curScene.tab==='cou'||curScene.tab==='free'){
+    if(!cArr||!cArr[0].isConnected)cArr=[0,1].map(()=>mk('path',{fill:'none',stroke:'#ff9f1c','stroke-width':6,'stroke-linecap':'round','stroke-linejoin':'round'},L.fx));
+    [[a,b],[b,a]].forEach((p,i)=>{const u=[(p[1].cx-p[0].cx)/d,(p[1].cy-p[0].cy)/d],sg=att?1:-1;
+      if(F<=0){cArr[i].setAttribute('d','');return;}
+      const len=clamp(30+24*(Math.log10(F)+8),24,120),x1=p[0].cx+u[0]*sg*(p[0].R+8),y1=p[0].cy+u[1]*sg*(p[0].R+8);
+      cArr[i].setAttribute('d',arrowD(x1,y1,x1+u[0]*sg*len,y1+u[1]*sg*len));});
+  }
+  if(!upd)return;
+  const n=q1*1e-9/1.6e-19;
+  $('#coul').innerHTML='<div dir="ltr">F = k·|q₁|·|q₂| / r²</div><div dir="ltr">k = ۹×۱۰⁹ N·m²/C²</div>'+
+  '<div dir="ltr">q₁='+fa(Math.round(a.Q))+' nC, q₂='+fa(Math.round(b.Q))+' nC, r='+fa(rcm.toFixed(1))+' cm</div>'+
+  '<div dir="ltr">F = ۹×۱۰⁹ × ('+fa(q1)+'×۱۰⁻⁹)('+fa(q2)+'×۱۰⁻⁹) / ('+fa(r.toFixed(3))+')² = <b>'+sci(F)+' N</b></div>'+
+  '<div>نوع نیرو: <b>'+(F<=0?'بدون نیرو':att?'جاذبه (ربایشی)':'دافعه (رانشی)')+'</b></div>'+
+  '<div dir="ltr">اگر r دو برابر شود: F′ = '+sci(F/4)+' N</div>'+
+  '<div dir="ltr">تعداد الکترون‌های جابه‌جاشده (کره‌ی اول): n=|q|/e ≈ '+sci(n)+'</div>';
+}
+const QB=`در جسم خنثی|تعداد پروتون‌ها و الکترون‌ها برابر است|تعداد نوترون‌ها و الکترون‌ها برابر است|فقط پروتون وجود دارد|هیچ بار مثبت و منفی ندارد|1|در جسم خنثی بارهای مثبت و منفی برابرند.
+وقتی جسمی بار مثبت می‌گیرد جرمش|مقدار ناچیزی کم می‌شود|مقدار ناچیزی زیاد می‌شود|تغییر نمی‌کند|به‌وضوح زیاد می‌شود|1|بار مثبت یعنی از دست دادن الکترون و جرم الکترون بسیار ناچیز است.
+میله‌ی پلاستیکی را به پارچه‌ی پشمی مالش می‌دهیم:|میله منفی و پارچه مثبت|میله مثبت و پارچه منفی|هر دو مثبت|هر دو منفی|1|پلاستیک الکترون می‌گیرد و پشم الکترون از دست می‌دهد.
+میله‌ی شیشه‌ای را با ابریشم مالش می‌دهیم:|شیشه مثبت، ابریشم منفی|شیشه منفی، ابریشم مثبت|هر دو مثبت|هر دو بدون بار|1|بر اساس سری تریبوالکتریک شیشه مثبت می‌شود.
+در مالش دو جسم، بار دو جسم|برابر و مخالف است|برابر و هم‌نام است|فقط یکی باردار می‌شود|همیشه صفر است|1|پایستگی بار: الکترون‌ها فقط جابه‌جا می‌شوند.
+از کدام راه نمی‌توان یکی از دو ماده‌ی کاملاً مشابه را باردار کرد؟|مالش آن‌ها به هم|تماس با جسم باردار|القا|هر سه ممکن است|1|مالش به تفاوت تمایل مواد برای جذب الکترون وابسته است.
+چرا میله‌ی فلزی در دست با مالش باردار نمی‌شود؟|بار از راه بدن به زمین می‌رود|فلز الکترون ندارد|فلز پروتون ندارد|مالش روی فلز اثر ندارد|1|فلز و بدن هر دو رسانا هستند و بار فرار می‌کند.
+میله‌ی منفی را به کره‌ی خنثی نزدیک می‌کنیم، کره را به زمین وصل و سپس قطع می‌کنیم و میله را دور می‌کنیم. بار کره:|مثبت|منفی|خنثی|نیمی مثبت و نیمی منفی|1|القا: الکترون‌ها دفع شدند و رفتند؛ بار کره مخالف میله است.
+بار حاصل از روش تماس نسبت به بار میله|هم‌نام است|ناهمنام است|همیشه صفر است|ندارد|1|در تماس بار هم‌نام می‌گیریم، در القا ناهمنام.
+میله‌ی منفی را به کلاهک الکتروسکوپ خنثی نزدیک می‌کنیم؛ برگه‌ها|از هم دور می‌شوند|به هم نزدیک می‌شوند|تغییری نمی‌کنند|بسته می‌شوند|1|بارهای منفی به برگه‌ها رانده می‌شوند.
+الکتروسکوپ منفی است و میله‌ای نزدیک می‌کنیم و برگه‌ها بسته‌تر می‌شوند. میله|بار مثبت دارد|بار منفی دارد|خنثی است|هیچ‌کدام|1|میله‌ی ناهمنام بار برگه‌ها را به سمت کلاهک می‌کشد.
+انگشت را به کلاهک الکتروسکوپ منفی می‌زنیم:|الکترون‌ها به زمین می‌روند و برگه‌ها بسته می‌شوند|الکترون از زمین می‌آید و برگه‌ها بیشتر باز می‌شوند|تغییری نمی‌کند|برگه‌ها مثبت می‌شوند|1|اتصال به زمین بار اضافی را می‌برد.
+#دو کره‌ی رسانای هم‌اندازه با بارهای ‎+۱۲‎ و ‎۰‎ به هم تماس می‌دهیم. بار هر کره|+۶|+۱۲|+۳|۰|1|q′ = (q₁+q₂)/۲ = ۶
+#دو کره‌ی هم‌اندازه با بار ‎−۸‎ و ‎−۱۲‎ تماس می‌دهیم. بار هر کره|−۱۰|−۲۰|−۴|−۸|1|(−۸−۱۲)/۲ = −۱۰
+#کره‌ی بزرگ (R=۱۰) با بار ‎−۲۰‎ و کره‌ی کوچک (R=۲) با ‎+۵۰‎ تماس می‌دهیم. بار نهایی بزرگ و کوچک:|+۲۵ و +۵|+۱۵ و +۱۵|+۳۰ و ۰|+۵ و +۲۵|1|بار کل +۳۰ به نسبت شعاع ۱۰:۲ تقسیم می‌شود.
+#از جسمی ۵×۱۰¹⁰ الکترون جدا می‌کنیم (e=۱٫۶×۱۰⁻¹⁹ C). بار جسم:|+۸ نانوکولن|−۸ نانوکولن|+۸ میکروکولن|+۸۰ نانوکولن|1|q = ne = ۵×۱۰¹⁰×۱٫۶×۱۰⁻¹⁹ = ۸×۱۰⁻⁹ C
+#فاصله‌ی دو بار را دو برابر می‌کنیم؛ نیروی بین آن‌ها|یک‌چهارم می‌شود|نصف می‌شود|۴ برابر می‌شود|۲ برابر می‌شود|1|F ∝ ۱/r²
+#اندازه‌ی یکی از دو بار و فاصله هر دو نصف می‌شوند. نیرو چند برابر می‌شود؟|۲|۴|۱/۲|۱/۴|1|F ∝ q/r² ⟵ (۱/۲)/(۱/۴) = ۲
+#بارهای ‎+۴‎ nC و ‎−۶‎ nC را تماس و سپس تا ۳۰ cm جدا می‌کنیم. نیرو (k=۹×۱۰⁹):|۱۰⁻⁷ N رانشی|۱۰⁻⁷ N ربایشی|۲٫۴×۱۰⁻⁷ N رانشی|۱٫۸×۱۰⁻⁷ N ربایشی|1|هر کدام −۱ nC؛ F = ۹×۱۰⁹×۱۰⁻¹⁸/۰٫۰۹ = ۱۰⁻⁷ N و هم‌نام ⟵ رانشی
+ثابت کولن تقریباً برابر است با|۹×۱۰⁹ N·m²/C²|۹×۱۰⁻⁹ N·m²/C²|۱٫۶×۱۰⁻¹⁹ C|۹٫۸ N/kg|1|k ≈ ۹×۱۰⁹
+خطوط میدان الکتریکی|از بار مثبت خارج و به بار منفی وارد می‌شوند|از بار منفی خارج می‌شوند|یکدیگر را قطع می‌کنند|جهت ندارند|1|هم‌جهت با نیروی وارد بر بار آزمون مثبت‌اند.
+چرا آزمایش‌های الکتریسیته‌ی ساکن در هوای مرطوب خطا دارند؟|بخار آب رساناست و بار را تخلیه می‌کند|رطوبت بار تولید می‌کند|رطوبت جرم را زیاد می‌کند|رطوبت نور را کم می‌کند|1|بار از راه رطوبت به هوا فرار می‌کند.
+برق‌گیر|بار الکتریکی را به زمین هدایت می‌کند|بار ابر را زیاد می‌کند|از نارسانا ساخته می‌شود|آذرخش را متوقف می‌کند|1|برق‌گیر باید رسانا باشد.
+قناری درون قفس فلزی که آذرخش به آن می‌خورد|سالم می‌ماند چون بار روی سطح بیرونی پخش می‌شود|می‌میرد|بار منفی می‌گیرد|گرم می‌شود و می‌سوزد|1|بار رسانا روی سطح خارجی است (قفس فارادی).
+در جسم رسانای باردار، بار بیشتر در کجا جمع می‌شود؟|سطح خارجی، به‌ویژه نوک‌های تیز|مرکز حجم|سطح داخلی|یکنواخت در حجم|1|بارهای هم‌نام همدیگر را می‌رانند.
+شانه‌ی باردار خرده‌کاغذ را جذب می‌کند چون|در کاغذ بار القا می‌شود|کاغذ بار هم‌نام دارد|شانه آهنربا است|گرانش زیاد می‌شود|1|بار ناهمنام نزدیک‌تر است و جاذبه غالب می‌شود.
+باریکه‌ی آب را به شانه‌ی باردار نزدیک می‌کنیم؛ باریکه|به سمت شانه خم می‌شود|دور می‌شود|تغییر نمی‌کند|قطع می‌شود|1|القا در آب و جاذبه‌ی الکتریکی.
+جهت جریان قراردادی نسبت به حرکت الکترون‌ها|مخالف است|موافق است|عمود است|مرتبط نیست|1|جریان قراردادی جهت حرکت بارهای مثبت است.`.split('\n').map(l=>{const p=l.split('|'),k=p[0][0]==='#';return {q:p[0].replace(/^#/,''),o:p.slice(1,5),a:+p[5]-1,e:p[6],k};});
+let qOrder=[],qi=0,qScore=0,qAns=false;
+function openQuiz(){curTab='quiz';buildTabs();$('#labSec').style.display='none';$('#side').style.display='none';$('#qb').style.display='block';qStart('all');}
+function qStart(m){qOrder=QB.map((_,i)=>i).filter(i=>m==='all'||QB[i].k).sort(()=>Math.random()-.5);qi=0;qScore=0;qShow();}
+function qShow(){qAns=false;const box=$('#qb');
+  const head='<h3>📚 بانک سوال</h3><div class="tools" style="margin:0 0 10px"><button class="btn" data-m="all">همه‌ی سؤال‌ها</button><button class="btn" data-m="k">فقط محاسبه و کولن</button></div>';
+  if(qi>=qOrder.length)box.innerHTML=head+'<p class="goal">پایان! امتیاز: '+fa(qScore)+' از '+fa(qOrder.length)+'</p><button class="btn" data-m="all">🔁 دوباره</button>';
+  else{const q=QB[qOrder[qi]];q.p=[0,1,2,3].sort(()=>Math.random()-.5);box.innerHTML=head+'<p class="goal">سؤال '+fa(qi+1)+' از '+fa(qOrder.length)+' — امتیاز: '+fa(qScore)+'</p><p class="goal"><b>'+q.q+'</b></p>'+q.p.map((oi,i)=>'<button class="qopt" data-i="'+oi+'">'+fa(i+1)+') '+q.o[oi]+'</button>').join('')+'<div class="tip" id="qe" style="display:none"></div><button class="btn" id="qn" style="display:none">بعدی ⬅</button>';}
+  box.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>qStart(b.dataset.m));
+  box.querySelectorAll('.qopt').forEach(b=>b.onclick=()=>{if(qAns)return;qAns=true;const q=QB[qOrder[qi]],i=+b.dataset.i;if(i===q.a)qScore++;
+    box.querySelectorAll('.qopt').forEach((x,j)=>{if(+x.dataset.i===q.a)x.classList.add('ok');else if(+x.dataset.i===i)x.classList.add('no');});
+    const e=$('#qe');e.style.display='block';e.textContent=(i===q.a?'✅ درست! ':'❌ پاسخ درست گزینه‌ی '+fa(q.p.indexOf(q.a)+1)+' است. ')+q.e;$('#qn').style.display='inline-block';$('#qn').onclick=()=>{qi++;qShow();};});
+}
+
+let hum=0,tp={},skipSave=false,noPre=false,sel=null,selRing=null,uid=0,mute=false,AC=null;
+const glow=q=>(!MOB.matches&&Math.abs(q)>.3)?'drop-shadow(0 0 '+Math.min(14,Math.abs(q)*2)+'px '+(q>0?'#ff5d7a':'#4aa3ff')+')':'none';
+function snd(f,d,t){if(mute)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=t||'square';o.frequency.value=f;g.gain.value=.04;o.connect(g);g.connect(AC.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+d);o.stop(AC.currentTime+d);}catch(e){}}
+$('#bMute').onclick=()=>{mute=!mute;$('#bMute').textContent=mute?'🔇':'🔊';};
+$('#bFs').onclick=()=>{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();};if(!document.documentElement.requestFullscreen)$('#bFs').style.display='none';
+$('#selHum').onchange=e=>{hum=+e.target.value;toast(hum?'رطوبت بالا می‌رود: بار اجسام کم‌کم نشت می‌کند.':'هوای خشک: بار نشت نمی‌کند.');};
+const PALI=[['sphere','⚪','کره‌ی فلزی'],['scope','🔬','الکتروسکوپ'],['rod','📏','میله'],['cloth','🧣','پارچه'],['wire','🔌','سیم رابط'],['gwire','⏚','سیم زمین']];
+PALI.forEach(p=>{const d=document.createElement('div');d.className='pi';d.title='بکش و روی صحنه بنداز';d.style.touchAction='none';d.innerHTML='<span>'+p[1]+'</span>'+p[2];
+  d.onpointerdown=e=>{e.preventDefault();const gh=document.createElement('div');gh.className='pi';gh.style.cssText='position:fixed;z-index:99;pointer-events:none;opacity:.85;width:90px';gh.innerHTML=d.innerHTML;document.body.appendChild(gh);let mv=0;
+    const pos=ev=>{gh.style.left=ev.clientX-45+'px';gh.style.top=ev.clientY-40+'px';};pos(e);
+    const m=ev=>{mv++;pos(ev);},u=ev=>{removeEventListener('pointermove',m);removeEventListener('pointerup',u);gh.remove();const r=svg.getBoundingClientRect();
+      if(ev.clientX>=r.left&&ev.clientX<=r.right&&ev.clientY>=r.top&&ev.clientY<=r.bottom)spawn(p[0],toSVG(ev));else if(mv<3)spawn(p[0],{x:420+Math.random()*350,y:300});};
+    addEventListener('pointermove',m);addEventListener('pointerup',u);};
+  $('#pal').appendChild(d);});
+svg.addEventListener('dragover',e=>e.preventDefault());
+svg.addEventListener('drop',e=>{e.preventDefault();spawn(e.dataTransfer.getData('text/plain'),toSVG(e));});
+function spawn(k,p){if(curScene.tab!=='free')return;const x=clamp(p.x,130,930);let it=null;
+  if(k==='sphere')it=addSphere('کره '+(++uid),x,0,6,['mA','mB','mC'][uid%3]);
+  else if(k==='scope')it=addScope('الکتروسکوپ '+(++uid),x,0);
+  else if(k==='rod')it=addRod('mat',p.x,p.y,'پلاستیک');
+  else if(k==='cloth'){if(cloth)removeItem(cloth);it=addCloth('پشم',p.x,p.y);}
+  else if(k==='gwire')it=addWire('ground',p.x,p.y,'#2d2d33','سیم زمین');
+  else if(k==='wire'){if(!conds.length)return toast('اول یک کره یا الکتروسکوپ بگذار.');let b=conds[0];conds.forEach(c=>{if(Math.hypot(c.cx-p.x,c.cy-p.y)<Math.hypot(b.cx-p.x,b.cy-p.y))b=c;});it=addWire(b,p.x,p.y,'#ff8a3d','سیم رابط');}
+  if(it){if(it.Q!==undefined)it.Qd=it.Q;selectItem(it);buildSliders();snd(300,.1,'sine');}}
+function preset(){spawn('sphere',{x:480});spawn('scope',{x:760});spawn('rod',{x:200,y:290});spawn('cloth',{x:230,y:430});}
+function removeItem(it){
+  if(conds.includes(it)){wires=wires.filter(w=>{if(w.anchor===it){[w.sh,w.p,w.hl,w.fl,w.g].forEach(e=>e.remove());return false;}return true;});conds.splice(conds.indexOf(it),1);}
+  else if(rods.includes(it))rods.splice(rods.indexOf(it),1);
+  else if(it===cloth)cloth=null;
+  else if(wires.includes(it)){[it.sh,it.p,it.hl,it.fl].forEach(e=>e.remove());wires.splice(wires.indexOf(it),1);}
+  else return;
+  it.g.remove();sel=null;buildProp();buildSliders();}
+function openFloat(it,x,y){if(curScene.tab!=='free')return;selectItem(it);const c=$('#cProp');c.classList.add('float');c.style.display='block';
+  c.style.left=clamp(x+24,8,innerWidth-300)+'px';c.style.top=clamp(y-120,8,Math.max(8,innerHeight-470))+'px';buildProp();}
+function closeFloat(){const c=$('#cProp');c.classList.remove('float');c.style.left=c.style.top='';buildProp();}
+svg.addEventListener('pointerdown',e=>{if(!e.target.closest('#lCond,#lItem,#lWire'))closeFloat();});
+function dupItem(it){const p={x:it.x+(it.R||60)*2+30,y:(it.y||300)+40};let n=null;
+  if(it.type==='sphere'){spawn('sphere',p);n=conds[conds.length-1];n.Ru=it.Ru;n.Q=it.Q;n.Qd=it.Q;}
+  else if(it.type==='scope'){spawn('scope',p);n=conds[conds.length-1];n.Q=it.Q;n.Qd=it.Q;}
+  else if(rods.includes(it)){spawn('rod',p);n=rods[rods.length-1];n.mat=it.mat;rodStyle(n);n.q=n.q0=it.q;n.ang=it.ang;}
+  if(n)selectItem(n);}
+function setCharge(it,v){if(conds.includes(it))it.Q=v;else if(rods.includes(it))it.q=it.q0=v;else if(it===cloth)it.q=v;}
+function selectItem(it){sel=it;if(curScene.tab==='free')buildProp();}
+function buildProp(){const b=$('#prop');if(!sel||curScene.tab!=='free'){b.innerHTML='<p class="goal">روی یک جسم کلیک کن تا انتخاب شود.</p>';return;}
+  const it=sel,isC=conds.includes(it),isR=rods.includes(it),isCl=it===cloth;
+  let h='<div class="row"><b>'+(it.name||'انگشت')+'</b></div>';
+  if(isC||isR||isCl)h+='<div class="tools" style="margin:6px 0"><button class="btn" data-v="8">➕ مثبت</button><button class="btn" data-v="-8">➖ منفی</button><button class="btn" data-v="0">⚪ خنثی</button><button class="btn" data-v="16">⚡ +۱۶</button><button class="btn" data-v="-16">⚡ −۱۶</button><button class="btn" id="prn">🎲 تصادفی</button></div>';
+  if((isR&&it.type==='mat')||isCl)h+='<label style="font-size:12.5px">جنس</label><select id="pm">'+SERIES.map(m=>'<option'+(m===it.mat?' selected':'')+'>'+m+'</option>').join('')+'</select>';
+  if(it.type==='sphere')h+='<div class="sl"><span>شعاع</span><input type="range" id="pr" min="2" max="12" value="'+it.Ru+'"><b>'+fa(it.Ru)+'</b></div>';
+  if(isC||isR||isCl){const q=isC?it.Q:it.q;h+='<div class="sl"><span>بار</span><input type="range" id="pq" min="-20" max="20" value="'+Math.round(q)+'"><b>'+fa(Math.round(q))+'</b></div>';}
+  if(it.type==='sphere')h+='<label style="font-size:12.5px">جنس کره</label><select id="pg">'+[['mA','طلایی'],['mB','نقره‌ای'],['mC','مسی'],['mS','فولادی']].map(m=>'<option value="'+m[0]+'"'+(m[0]===it.grad?' selected':'')+'>'+m[1]+'</option>').join('')+'</select>';
+  if(isR)h+='<div class="sl"><span>زاویه</span><input type="range" id="pa" min="-90" max="90" value="'+Math.round(it.ang)+'"><b>'+fa(Math.round(it.ang))+'°</b></div>';
+  if((isC||isR)&&true)h+='<button class="btn" id="pdup">📄 کپی</button>';
+  if(isR)h+='<button class="btn" id="phd">👁️ پنهان/نمایش بار</button>';
+  if(it!==finger)h+='<button class="btn" id="pd">🗑️ حذف</button>';
+  if($('#cProp').classList.contains('float'))h='<button class="btn" id="pcl">✕ بستن</button>'+h;
+  b.innerHTML=h;
+  b.querySelectorAll('[data-v]').forEach(x=>x.onclick=()=>setCharge(it,+x.dataset.v));
+  const pm=$('#pm');if(pm)pm.onchange=()=>{it.mat=pm.value;if(isCl){clothStyle(it);rods.forEach(r=>{r.done=false;r.acc=0;});}else{rodStyle(it);it.done=false;it.acc=0;}};
+  const pr=$('#pr');if(pr)pr.oninput=()=>{it.Ru=+pr.value;pr.nextSibling.textContent=fa(it.Ru);};
+  const prn=$('#prn');if(prn)prn.onclick=()=>setCharge(it,Math.round(Math.random()*30-15));
+  const pdup=$('#pdup');if(pdup)pdup.onclick=()=>dupItem(it);
+  const phd=$('#phd');if(phd)phd.onclick=()=>{it.hidden=!it.hidden;};
+  const pq=$('#pq');if(pq)pq.oninput=()=>{setCharge(it,+pq.value);pq.nextSibling.textContent=fa(pq.value);};
+  const pg=$('#pg');if(pg)pg.onchange=()=>{it.grad=pg.value;it.body.setAttribute('fill','url(#'+pg.value+')');};
+  const pa=$('#pa');if(pa)pa.oninput=()=>{it.ang=+pa.value;pa.nextSibling.textContent=fa(pa.value)+'°';};
+  const pcl=$('#pcl');if(pcl)pcl.onclick=closeFloat;
+  const pd=$('#pd');if(pd)arm(pd,()=>removeItem(it));}
+svg.addEventListener('wheel',e=>{if(curScene.tab!=='free'||!sel)return;if(sel.type==='sphere')sel.Ru=clamp(sel.Ru+(e.deltaY<0?1:-1),2,12);else if(rods.includes(sel))sel.ang+=e.deltaY<0?10:-10;else return;e.preventDefault();buildProp();},{passive:false});
+addEventListener('keydown',e=>{if(curScene.tab!=='free'||!sel||/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;
+  if(e.key==='Delete')removeItem(sel);else if(e.key==='Escape'){sel=null;buildProp();}
+  else if((e.key==='d'||e.key==='D')&&e.ctrlKey){e.preventDefault();dupItem(sel);}
+  else if(e.key.startsWith('Arrow')){const dx={ArrowLeft:-12,ArrowRight:12}[e.key]||0,dy={ArrowUp:-12,ArrowDown:12}[e.key]||0;sel.x=clamp(sel.x+dx,25,975);if(!conds.includes(sel))sel.y=clamp(sel.y+dy,25,630);e.preventDefault();}
+  else{const v={'+':8,'=':8,'-':-8,'0':0}[e.key];if(v!==undefined)setCharge(sel,v);}});
+const FACTS=['می‌دانستی؟ جرم الکترون آن‌قدر کم است که با بار مثبت گرفتن، جرم جسم تقریباً تغییر نمی‌کند.','نکته: بار همیشه پایسته است؛ فقط الکترون‌ها جابه‌جا می‌شوند، پروتون‌ها نه.','نکته: بار رسانا روی سطح بیرونی و نوک‌های تیز جمع می‌شود.','القا: بار القاشده همیشه مخالف بار میله است.','در تماس دو کره‌ی هم‌اندازه، بار کل مساوی تقسیم می‌شود.','در هوای مرطوب بار زود فرار می‌کند؛ آزمایش را در هوای خشک انجام بده.'];
+setInterval(()=>{if(curScene.tab==='free'&&!document.hidden)toast(FACTS[Math.floor(Math.random()*FACTS.length)]);},45000);
+const SKEY='esl-free-v1';
+function saveFree(){if(!curScene||curScene.tab!=='free')return;try{
+ const o={uid,conds:conds.map(c=>({t:c.type,n:c.name,x:Math.round(c.x),Q:+c.Q.toFixed(2),Ru:c.Ru,g:c.grad,l:Math.round(c.lift||0)})),
+ rods:rods.map(r=>({x:Math.round(r.x),y:Math.round(r.y),m:r.mat,a:r.ang,q:+r.q.toFixed(2),q0:r.q0,h:r.hidden,ty:r.type})),
+ cloth:cloth?{x:Math.round(cloth.x),y:Math.round(cloth.y),m:cloth.mat,q:+cloth.q.toFixed(2)}:null,
+ wires:wires.filter(w=>!w.def).map(w=>({a:w.anchor==='ground'?-1:conds.indexOf(w.anchor),x:Math.round(w.x),y:Math.round(w.y)}))};
+ localStorage.setItem(SKEY,JSON.stringify(o));}catch(e){}}
+function loadSaved(){try{const t=localStorage.getItem(SKEY);return t?JSON.parse(t):null;}catch(e){return null;}}
+function clearFree(){try{localStorage.removeItem(SKEY);}catch(e){}}
+function restoreFree(o){try{uid=o.uid||0;
+ o.conds.forEach(c=>{const it=c.t==='scope'?addScope(c.n,c.x,c.Q):addSphere(c.n,c.x,c.Q,c.Ru,c.g||'mA');it.Qd=c.Q;it.lift=c.l||0;});
+ o.rods.forEach(d=>{const r=addRod(d.ty||'mat',d.x,d.y,d.m);r.ang=d.a;r.q=d.q;r.q0=d.q0;r.hidden=!!d.h;});
+ if(o.cloth){const c=addCloth(o.cloth.m,o.cloth.x,o.cloth.y);c.q=o.cloth.q;}
+ o.wires.forEach(d=>{const anc=d.a<0?'ground':conds[d.a];if(!anc)return;addWire(anc,d.x,d.y,anc==='ground'?'#2d2d33':'#ff8a3d',anc==='ground'?'سیم زمین':'سیم رابط');});
+ }catch(e){}}
+setInterval(saveFree,1500);addEventListener('pagehide',saveFree);document.addEventListener('visibilitychange',()=>{if(document.hidden)saveFree();});
+loadScene(SC.find(x=>x.tab==='free'));
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
