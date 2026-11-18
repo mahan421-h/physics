@@ -1,0 +1,24 @@
+name: Publish to public site repo
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Push to public repo
+        env:
+          RAW_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+        run: |
+          TOKEN=$(printf '%s' "$RAW_TOKEN" | tr -d '[:space:]')
+          rm -rf .git .github README.md
+          git init -b gh-pages
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add -A
+          git commit -m "Publish site"
+          git push --force "https://x-access-token:${TOKEN}@github.com/mahan421-h/physicslab.git" gh-pages
