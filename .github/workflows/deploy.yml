@@ -1,24 +1,21 @@
-name: Publish to public site repo
+name: Deploy to public repo
 
 on:
   push:
-    branches: [main]
+    branches: [main] # یا master، هر کدوم که شاخه اصلیته
 
 jobs:
-  publish:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Push to public repo
-        env:
-          RAW_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-        run: |
-          TOKEN=$(printf '%s' "$RAW_TOKEN" | tr -d '[:space:]')
-          rm -rf .git .github README.md
-          git init -b gh-pages
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git add -A
-          git commit -m "Publish site"
-          git push --force "https://x-access-token:${TOKEN}@github.com/mahan421-h/physicslab.git" gh-pages
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          personal_token: ${{ secrets.DEPLOY_TOKEN }}
+          external_repository: mahan421-h/physicslab
+          publish_branch: gh-pages
+          publish_dir: ./
+          exclude_assets: '.github,README.md'
