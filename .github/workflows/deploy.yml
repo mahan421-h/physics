@@ -10,10 +10,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: peaceiris/actions-gh-pages@v4
-        with:
-          personal_token: ${ {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 }}
-          external_repository: mahan421-h/physicslab
-          publish_branch: gh-pages
-          publish_dir: ./
-          exclude_assets: '.github,README.md'
+      - name: Push to public repo
+        env:
+          RAW_TOKEN: ${{ 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 }}
+        run: |
+          TOKEN=$(printf '%s' "$RAW_TOKEN" | tr -d '[:space:]')
+          rm -rf .git .github README.md
+          git init -b gh-pages
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add -A
+          git commit -m "Publish site"
+          git push --force "https://x-access-token:${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}@github.com/mahan421-h/physicslab.git" gh-pages
