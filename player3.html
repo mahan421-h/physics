@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#0b1630">
+<script>try{if(self!==top)document.documentElement.className="embed"}catch(e){document.documentElement.className="embed"}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://s101.picofile.com">
+<title>پخش ویدیو</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600&display=swap">
+<style>
+  :root { --ink:#0b1630; --panel:#142250; --line:#2a3a6d; --text:#eef2ff; --muted:#93a0c4; --accent:#ffc928; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; min-height:100vh; background:var(--ink); color:var(--text);
+         font-family:"Vazirmatn", Tahoma, system-ui, sans-serif;
+         display:flex; align-items:center; justify-content:center; padding:16px; }
+  .wrap { width:100%; max-width:920px; transition:max-width .25s; }
+  .wrap.theater { max-width:1400px; }
+  h1 { font-size:18px; font-weight:600; margin:0 0 12px; }
+
+  .pl { position:relative; background:#000; border-radius:14px; overflow:hidden; aspect-ratio:16/9;
+        direction:ltr; user-select:none; -webkit-user-select:none; outline:none; }
+  .pl video { width:100%; height:100%; object-fit:contain; display:block; background:#000; }
+  .pl:fullscreen { border-radius:0; aspect-ratio:auto; }
+  .pl.idle { cursor:none; }
+
+  .big { position:absolute; inset:0; margin:auto; width:76px; height:76px; border-radius:50%; border:0;
+         background:rgba(255,201,40,.92); color:#0b1630; display:grid; place-items:center; cursor:pointer;
+         transition:opacity .2s, transform .2s; }
+  .big svg { width:34px; height:34px; }
+  .pl.playing .big { opacity:0; pointer-events:none; transform:scale(1.25); }
+
+  .spin { position:absolute; inset:0; margin:auto; width:52px; height:52px; border-radius:50%;
+          border:4px solid rgba(255,255,255,.25); border-top-color:var(--accent);
+          animation:sp .8s linear infinite; display:none; pointer-events:none; }
+  .pl.loading .spin { display:block; }
+  @keyframes sp { to { transform:rotate(360deg); } }
+
+  .toast { position:absolute; top:14px; left:50%; transform:translateX(-50%); background:rgba(11,22,48,.88);
+           padding:6px 14px; border-radius:20px; font-size:13px; direction:rtl; opacity:0; transition:opacity .2s; pointer-events:none; }
+  .toast.on { opacity:1; }
+
+  .rip { position:absolute; top:50%; width:110px; height:110px; margin-top:-55px; border-radius:50%;
+         background:rgba(255,255,255,.18); display:grid; place-items:center; font-size:15px; direction:rtl;
+         opacity:0; pointer-events:none; }
+  .rip.l { left:8%; } .rip.r { right:8%; }
+  .rip.on { animation:rp .6s ease-out; }
+  @keyframes rp { 0%{opacity:1; transform:scale(.8);} 100%{opacity:0; transform:scale(1.15);} }
+
+  .err { position:absolute; inset:0; background:rgba(11,22,48,.94); display:none; flex-direction:column; gap:14px;
+         align-items:center; justify-content:center; text-align:center; padding:24px; direction:rtl; line-height:1.9; font-size:14px; }
+  .pl.failed .err { display:flex; }
+  .pl.failed .big, .pl.failed .ctl { display:none; }
+
+  .ctl { position:absolute; left:0; right:0; bottom:0; padding:28px 12px 8px;
+         background:linear-gradient(transparent, rgba(0,0,0,.82)); transition:opacity .25s; }
+  .pl.idle .ctl { opacity:0; pointer-events:none; }
+  .row { display:flex; align-items:center; gap:2px; }
+  .sp1 { flex:1; }
+  .ib { background:none; border:0; color:#fff; width:38px; height:38px; display:grid; place-items:center; border-radius:8px; cursor:pointer; position:relative; }
+  .ib:hover { background:rgba(255,255,255,.14); }
+  .ib:focus-visible, .big:focus-visible, .chip:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  .ib svg { width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .ib .fill { fill:currentColor; stroke:none; }
+  .ib.on { color:var(--accent); }
+  .ib[data-tip]:hover::after { content:attr(data-tip); position:absolute; bottom:44px; left:50%; transform:translateX(-50%);
+         background:rgba(11,22,48,.95); padding:4px 10px; border-radius:6px; font-size:12px; white-space:nowrap; direction:rtl; }
+  .time { font-size:13px; padding:0 8px; font-variant-numeric:tabular-nums; white-space:nowrap; direction:ltr; unicode-bidi:isolate; }
+
+  .vol { display:flex; align-items:center; }
+  .vol input { width:0; opacity:0; transition:width .2s, opacity .2s; accent-color:var(--accent); height:4px; margin:0; }
+  .vol:hover input, .vol:focus-within input { width:78px; opacity:1; margin:0 6px 0 2px; }
+
+  .seek { position:relative; height:20px; cursor:pointer; touch-action:none; display:flex; align-items:center; }
+  .track { position:relative; width:100%; height:4px; background:rgba(255,255,255,.28); border-radius:4px; transition:height .15s; }
+  .seek:hover .track, .seek.drag .track { height:7px; }
+  .buf, .fillbar { position:absolute; left:0; top:0; bottom:0; border-radius:4px; }
+  .buf { background:rgba(255,255,255,.35); width:0; }
+  .fillbar { background:var(--accent); width:0; }
+  .knob { position:absolute; top:50%; width:14px; height:14px; margin:-7px 0 0 -7px; border-radius:50%; background:var(--accent);
+          transform:scale(0); transition:transform .15s; left:0; }
+  .seek:hover .knob, .seek.drag .knob { transform:scale(1); }
+  .tip { position:absolute; bottom:24px; transform:translateX(-50%); background:rgba(11,22,48,.95); padding:3px 8px;
+         border-radius:6px; font-size:12px; display:none; pointer-events:none; direction:rtl; }
+  .seek:hover .tip, .seek.drag .tip { display:block; }
+
+  .menu { position:absolute; right:12px; bottom:76px; width:230px; background:rgba(20,34,80,.97); border:1px solid var(--line);
+          border-radius:12px; padding:12px; display:none; direction:rtl; font-size:13px; }
+  .menu.on { display:block; }
+  .menu h3 { margin:0 0 8px; font-size:12px; font-weight:400; color:var(--muted); }
+  .chips { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:12px; }
+  .chip { background:#1d2d63; color:var(--text); border:1px solid var(--line); border-radius:8px; padding:6px 0; font:inherit; font-size:12px; cursor:pointer; }
+  .chip:hover { border-color:var(--accent); }
+  .chip.sel { background:var(--accent); color:#0b1630; border-color:var(--accent); font-weight:600; }
+  .opt { display:flex; justify-content:space-between; align-items:center; padding:6px 0; cursor:pointer; }
+  .opt input { accent-color:var(--accent); width:16px; height:16px; }
+
+  /* حالت جاسازی‌شده داخل iframe: فقط خود پخش‌کننده، تمام‌قد */
+  html.embed body { padding:0; align-items:stretch; min-height:100dvh; }
+  html.embed .wrap { max-width:none; height:100dvh; }
+  html.embed h1, html.embed .hint, html.embed details { display:none; }
+  html.embed .pl { border-radius:0; aspect-ratio:auto; height:100dvh; }
+  .pl:focus-visible { outline:2px solid var(--accent); outline-offset:-2px; }
+  .hint { color:var(--muted); font-size:12px; margin-top:10px; line-height:1.9; }
+  details { margin-top:8px; color:var(--muted); font-size:12px; line-height:2; }
+  summary { cursor:pointer; }
+  kbd { background:#1d2d63; border:1px solid var(--line); border-radius:4px; padding:0 6px; font-family:inherit; color:var(--text); }
+  @media (max-width:560px) { .time { padding:0 4px; font-size:12px; } .ib { width:34px; } .rip { width:80px; height:80px; margin-top:-40px; } }
+  @media (prefers-reduced-motion:reduce) { * { transition:none !important; animation-duration:.01s !important; } }
+
+body{min-height:100dvh;padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+.pl{touch-action:manipulation}
+@media (hover:none){.ib[data-tip]:hover::after{display:none}}
+@media (pointer:coarse){
+ .ib{width:44px;height:44px}.ib svg{width:26px;height:26px}
+ .seek{height:40px}.track{height:5px}.knob{transform:scale(1);width:16px;height:16px;margin:-8px 0 0 -8px}
+ .vol input,#theater{display:none}.big{width:68px;height:68px}.time{font-size:12px;padding:0 4px}
+ .ctl{padding:36px 8px calc(6px + env(safe-area-inset-bottom))}
+ .menu{left:8px;right:8px;width:auto;bottom:calc(100px + env(safe-area-inset-bottom))}
+ .chip{padding:12px 0;font-size:14px}.opt{padding:12px 0}.opt input{width:22px;height:22px}
+}
+@media (max-width:560px){body{padding:0;align-items:flex-start}h1{padding:12px 16px 8px;margin:0}.pl{border-radius:0}.hint,details{padding:0 16px}}
+@media (orientation:landscape) and (max-height:500px){h1,.hint,details{display:none}body{padding:0}.wrap{max-width:none}.pl{border-radius:0;aspect-ratio:auto;height:100dvh}}
+
+/* ===================== اصلاحات موبایل + حالت افقی/عمودی ===================== */
+html,body{overflow-x:hidden}
+.pl{max-width:100%}
+.row{min-width:0}
+.time{flex:0 1 auto;min-width:0;overflow:hidden}
+.ctl{padding-left:max(8px,env(safe-area-inset-left));padding-right:max(8px,env(safe-area-inset-right))}
+.pl:fullscreen{width:100%;height:100%;max-height:none;border-radius:0}
+.pl:-webkit-full-screen{width:100%;height:100%;max-height:none;border-radius:0}
+
+/* حالت جاسازی‌شده: همیشه دقیقاً به اندازهٔ قاب (عمودی یا افقی) */
+html.embed,html.embed body{height:100%;min-height:0;overflow:hidden}
+html.embed .wrap,html.embed .pl{height:100%;max-width:none}
+
+/* صفحهٔ مستقل: قاب با نسبت واقعی ویدیو و بدون بیرون‌زدن از صفحه */
+html:not(.embed) .pl{max-height:calc(100dvh - 80px)}
+
+/* گوشی‌های باریک (عمودی): ردیف دکمه‌ها دیگر از عرض بیرون نمی‌زند */
+@media (max-width:480px){
+  .ib,.ib[data-tip]{width:38px;height:40px}
+  .ib svg{width:23px;height:23px}
+  #pip,#cast{display:none !important}
+  .time{font-size:11.5px;padding:0 2px}
+  .ctl{padding-top:26px}
+}
+@media (max-width:360px){ .ib{width:34px} .time{font-size:11px} }
+
+/* منوی تنظیمات در قاب کوچکِ عمودی (بر اساس عرض، چون داخل iframe جهت صفحه معتبر نیست): جمع‌وجور و قابل اسکرول */
+@media (max-width:480px){
+  .menu.on{display:flex;flex-wrap:wrap;gap:0 14px;padding:8px 10px;bottom:calc(92px + env(safe-area-inset-bottom));max-height:calc(100% - 100px);overflow:auto}
+  .menu h3{width:100%;margin:0 0 6px}
+  .chips{width:100%;grid-template-columns:repeat(6,1fr);margin-bottom:4px}
+  .chip{padding:8px 0;font-size:13px}
+  .opt{flex:1 1 42%;padding:6px 0}
+}
+
+/* حالت افقی روی گوشی (ارتفاع کم): کنترل‌ها فشرده، منو در گوشه */
+@media (orientation:landscape) and (max-height:500px) and (min-width:480px){
+  html:not(.embed) .pl{max-height:none}
+  .ctl{padding-top:20px;padding-bottom:max(4px,env(safe-area-inset-bottom))}
+  .seek{height:32px}
+  .big{width:58px;height:58px}
+  .rip{width:84px;height:84px;margin-top:-42px}
+  .toast{top:max(10px,env(safe-area-inset-top))}
+  .menu{left:auto;right:max(8px,env(safe-area-inset-right));width:min(380px,calc(100% - 16px));bottom:64px;max-height:calc(100% - 76px);overflow:auto;padding:10px}
+  .chips{grid-template-columns:repeat(6,1fr);margin-bottom:8px}
+  .chip{padding:8px 0}
+  .opt{padding:6px 0}
+}
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap">
+  <h1>پخش ویدیو</h1>
+
+  <div class="pl" id="pl" tabindex="0">
+    <video id="v" preload="metadata" playsinline webkit-playsinline x-webkit-airplay="allow">
+      <source src="https://s101.picofile.com/d/vYnq7fiZVXhxa3ih7-lxWcEFVaJiuCGvVdIEP6zKwKvHEW-j8hI-QoGiJyH1AhJYGN5GqXLI0X3hoENmDgR5cW7-888dis6vohAOxrL-gQ/VID_20261125_221703_409.mp4" type="video/mp4">
+    </video>
+
+    <button class="big" id="big" aria-label="پخش"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></button>
+    <div class="spin"></div>
+    <div class="toast" id="toast"></div>
+    <div class="rip l" id="ripL">−۱۰</div>
+    <div class="rip r" id="ripR">+۱۰</div>
+
+    <div class="err">
+      <div id="errtxt">ویدیو پخش نشد. اتصال اینترنت را بررسی کنید و «تلاش دوباره» را بزنید. اگر مشکل ادامه داشت، احتمالاً لینک ویدیو منقضی شده است.</div>
+      <button class="chip" id="retry" style="padding:8px 22px;font-size:14px">تلاش دوباره</button>
+    </div>
+
+    <div class="menu" id="menu">
+      <h3>سرعت پخش</h3>
+      <div class="chips" id="chips"></div>
+      <label class="opt"><span>تکرار ویدیو</span><input type="checkbox" id="loop"></label>
+      <label class="opt"><span>ادامه از آخرین نقطه</span><input type="checkbox" id="resume" checked></label>
+    </div>
+
+    <div class="ctl" id="ctl">
+      <div class="seek" id="seek">
+        <div class="track"><div class="buf" id="buf"></div><div class="fillbar" id="fillbar"></div><div class="knob" id="knob"></div></div>
+        <div class="tip" id="tip">۰۰:۰۰</div>
+      </div>
+      <div class="row">
+        <button class="ib" id="play" data-tip="پخش (Space)" aria-label="پخش"></button>
+        <button class="ib" id="back" data-tip="۱۰ ثانیه عقب (J)" aria-label="۱۰ ثانیه عقب"></button>
+        <button class="ib" id="fwd" data-tip="۱۰ ثانیه جلو (L)" aria-label="۱۰ ثانیه جلو"></button>
+        <div class="vol">
+          <button class="ib" id="mute" data-tip="بی‌صدا (M)" aria-label="بی‌صدا"></button>
+          <input type="range" id="vol" min="0" max="1" step="0.05" value="1" aria-label="میزان صدا">
+        </div>
+        <span class="time" id="time">۰۰:۰۰ / ۰۰:۰۰</span>
+        <span class="sp1"></span>
+        <button class="ib" id="set" data-tip="تنظیمات" aria-label="تنظیمات"></button>
+        <button class="ib" id="theater" data-tip="حالت سینمایی (T)" aria-label="حالت سینمایی"></button>
+        <button class="ib" id="pip" data-tip="تصویر در تصویر (P)" aria-label="تصویر در تصویر"></button>
+        <button class="ib" id="cast" data-tip="ارسال به صفحهٔ دیگر" aria-label="ارسال به صفحهٔ دیگر" hidden></button>
+        <button class="ib" id="fs" data-tip="تمام‌صفحه (F)" aria-label="تمام‌صفحه"></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="hint">ویدیو به‌صورت آنلاین پخش می‌شود و روی حافظهٔ دستگاه ذخیره نمی‌شود. فقط به اینترنت نیاز دارید.</div>
+  <details>
+    <summary>میان‌برهای صفحه‌کلید</summary>
+    <kbd>Space</kbd> / <kbd>K</kbd> پخش و توقف · <kbd>→</kbd> <kbd>←</kbd> ۵ ثانیه · <kbd>L</kbd> <kbd>J</kbd> ۱۰ ثانیه ·
+    <kbd>↑</kbd> <kbd>↓</kbd> صدا · <kbd>M</kbd> بی‌صدا · <kbd>F</kbd> تمام‌صفحه · <kbd>T</kbd> سینمایی · <kbd>P</kbd> تصویر در تصویر ·
+    <kbd>&lt;</kbd> <kbd>&gt;</kbd> سرعت · <kbd>۰</kbd>–<kbd>۹</kbd> پرش به درصد ویدیو · دوبار لمس لبهٔ چپ/راست: ۱۰ ثانیه
+  </details>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const v = $('v'), pl = $('pl'), seek = $('seek');
+  const SRC = v.querySelector('source').src.split('#')[0], KEY = 'pos:' + SRC.split('?')[0].split('/').pop();
+
+  /* ---------- helpers ---------- */
+  const fa = n => String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+  const fmt = t => {
+    if (!isFinite(t)) return fa('00:00');
+    t = Math.floor(t);
+    const h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), s = t % 60, p = x => String(x).padStart(2, '0');
+    return fa(h ? `${h}:${p(m)}:${p(s)}` : `${p(m)}:${p(s)}`);
+  };
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, x) { try { localStorage.setItem(k, x); } catch (e) {} },
+    del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+  };
+  let tt; const toast = txt => { const t = $('toast'); t.textContent = txt; t.classList.add('on'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('on'), 1200); };
+
+  const ICON = {
+    play: '<path class="fill" d="M8 5v14l11-7z"/>',
+    pause: '<path class="fill" d="M6 5h4v14H6zM14 5h4v14h-4z"/>',
+    back: '<path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4 3v4.5h4.5"/><text x="12" y="15" font-size="7" text-anchor="middle" stroke="none" fill="currentColor">۱۰</text>',
+    fwd: '<g transform="translate(24 0) scale(-1 1)"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4 3v4.5h4.5"/></g><text x="12" y="15" font-size="7" text-anchor="middle" stroke="none" fill="currentColor">۱۰</text>',
+    vol: '<path d="M4 9.5v5h3.5L12 19V5L7.5 9.5z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/>',
+    low: '<path d="M4 9.5v5h3.5L12 19V5L7.5 9.5z"/><path d="M15.5 9a4 4 0 0 1 0 6"/>',
+    muted: '<path d="M4 9.5v5h3.5L12 19V5L7.5 9.5z"/><path d="M16 9.5l5 5m0-5l-5 5"/>',
+    set: '<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',
+    theater: '<rect x="2.5" y="6.5" width="19" height="11" rx="2"/>',
+    pip: '<rect x="3" y="5" width="18" height="14" rx="2"/><rect class="fill" x="12" y="11" width="7" height="5" rx="1"/>',
+    cast: '<path d="M3 8V5h18v14h-7M3 12a9 9 0 0 1 9 9M3 16a5 5 0 0 1 5 5M3 20h.01"/>',
+    fs: '<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
+    nofs: '<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>'
+  };
+  const icon = (id, name) => { $(id).innerHTML = '<svg viewBox="0 0 24 24">' + ICON[name] + '</svg>'; };
+  [['play','play'],['back','back'],['fwd','fwd'],['mute','vol'],['set','set'],['theater','theater'],['pip','pip'],['cast','cast'],['fs','fs']]
+    .forEach(([a, b]) => icon(a, b));
+
+  /* ---------- play / pause ---------- */
+  const toggle = () => { v.paused ? v.play().catch(() => {}) : v.pause(); };
+  const skip = s => { v.currentTime = Math.max(0, Math.min(v.duration || 1e9, v.currentTime + s)); };
+  $('play').onclick = $('big').onclick = toggle;
+  $('back').onclick = () => skip(-10);
+  $('fwd').onclick = () => skip(10);
+  v.addEventListener('play', () => { pl.classList.add('playing'); icon('play', 'pause'); $('play').dataset.tip = 'توقف (Space)'; });
+  v.addEventListener('pause', () => { pl.classList.remove('playing'); icon('play', 'play'); $('play').dataset.tip = 'پخش (Space)'; wake(); });
+  v.addEventListener('ended', () => { store.del(KEY); });
+
+  /* ---------- loading / error ---------- */
+  const busy = () => pl.classList.add('loading');
+  const ready = () => pl.classList.remove('loading');
+  ['waiting', 'seeking'].forEach(e => v.addEventListener(e, busy));
+  v.addEventListener('play', () => { if (v.readyState < 3) busy(); });
+  ['canplay', 'seeked', 'pause'].forEach(e => v.addEventListener(e, ready));
+  ['playing', 'loadeddata'].forEach(e => v.addEventListener(e, () => { ready(); pl.classList.remove('failed'); }));
+
+  /* خطا: دو بار خودکار تلاش مجدد، بعد نمایش پیام */
+  let tries = 0, resumeAt = 0;
+  const reload = () => {
+    resumeAt = v.currentTime || resumeAt;
+    const again = !v.paused;
+    pl.classList.remove('failed'); busy();
+    v.load();
+    v.addEventListener('loadedmetadata', () => {
+      if (resumeAt) v.currentTime = resumeAt;
+      if (again) v.play().catch(() => {});
+    }, { once: true });
+  };
+  v.addEventListener('error', () => {
+    if (tries < 2 && navigator.onLine !== false) { tries++; busy(); setTimeout(reload, 1200 * tries); }
+    else { ready(); pl.classList.add('failed'); }
+  });
+  v.addEventListener('playing', () => { tries = 0; });
+  addEventListener('online', () => { if (v.error) { tries = 0; reload(); } });
+  $('retry').onclick = () => { tries = 0; reload(); };
+
+  /* ---------- progress ---------- */
+  const ratioAt = e => { const r = seek.getBoundingClientRect(); return Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)); };
+  const paint = () => {
+    const d = v.duration || 0, p = d ? v.currentTime / d * 100 : 0;
+    $('fillbar').style.width = p + '%'; $('knob').style.left = p + '%';
+    $('time').textContent = fmt(v.currentTime) + ' / ' + fmt(d);
+  };
+  const paintBuf = () => {
+    const b = v.buffered, d = v.duration || 0; let end = 0;
+    for (let i = 0; i < b.length; i++) if (b.start(i) <= v.currentTime + .5) end = Math.max(end, b.end(i));
+    $('buf').style.width = d ? end / d * 100 + '%' : '0';
+  };
+  let drag = false, last = 0;
+  v.addEventListener('timeupdate', () => {
+    if (!drag) paint();
+    paintBuf();
+    const n = Date.now();
+    if (n - last > 3000 && v.currentTime > 5 && $('resume').checked) { last = n; store.set(KEY, v.currentTime); }
+  });
+  ['progress', 'loadedmetadata', 'durationchange'].forEach(e => v.addEventListener(e, () => { paint(); paintBuf(); }));
+  const tip = e => { const r = ratioAt(e), t = $('tip'); t.textContent = fmt(r * (v.duration || 0)); const w = seek.clientWidth, h = (t.offsetWidth / 2) || 22; t.style.left = Math.max(h, Math.min(w - h, r * w)) + 'px'; return r; };
+  let pend = 0;
+  const ui2 = r => { $('fillbar').style.width = r * 100 + '%'; $('knob').style.left = r * 100 + '%'; $('time').textContent = fmt(r * (v.duration || 0)) + ' / ' + fmt(v.duration); };
+  seek.addEventListener('pointermove', e => { const r = tip(e); if (drag) { pend = r; ui2(r); } });
+  seek.addEventListener('pointerdown', e => { drag = true; seek.classList.add('drag'); seek.setPointerCapture(e.pointerId); pend = tip(e); ui2(pend); });
+  const endDrag = () => { if (drag) v.currentTime = pend * (v.duration || 0); drag = false; seek.classList.remove('drag'); };
+  seek.addEventListener('pointerup', endDrag); seek.addEventListener('pointercancel', endDrag);
+
+  /* ---------- resume ---------- */
+  const savePos = () => {
+    if ($('resume').checked && v.currentTime > 5 && isFinite(v.duration) && v.currentTime < v.duration - 10) store.set(KEY, v.currentTime);
+  };
+  v.addEventListener('pause', savePos);
+  addEventListener('pagehide', savePos);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) savePos(); });
+  v.addEventListener('loadedmetadata', () => {
+    const s = parseFloat(store.get(KEY));
+    if ($('resume').checked && s > 5 && s < v.duration - 10 && !v.dataset.resumed) {
+      v.dataset.resumed = 1; v.currentTime = s; toast('ادامه از ' + fmt(s));
+    }
+  });
+  $('resume').onchange = e => { store.set('resume', e.target.checked ? '1' : '0'); if (!e.target.checked) store.del(KEY); };
+  if (store.get('resume') === '0') $('resume').checked = false;
+
+  /* ---------- volume ---------- */
+  const volUI = () => {
+    $('vol').value = v.muted ? 0 : v.volume;
+    icon('mute', v.muted || v.volume === 0 ? 'muted' : v.volume < .5 ? 'low' : 'vol');
+  };
+  const setVol = x => { v.volume = Math.max(0, Math.min(1, x)); v.muted = v.volume === 0; store.set('vol', v.volume); toast('صدا ' + fa(Math.round(v.volume * 100)) + '٪'); };
+  $('vol').oninput = e => { v.muted = false; v.volume = +e.target.value; store.set('vol', v.volume); };
+  $('mute').onclick = () => { v.muted = !v.muted; if (!v.muted && v.volume === 0) v.volume = .5; toast(v.muted ? 'بی‌صدا' : 'صدا روشن'); };
+  v.addEventListener('volumechange', volUI);
+  const sv = parseFloat(store.get('vol')); if (sv >= 0 && sv <= 1) v.volume = sv;
+  volUI();
+
+  /* ---------- speed / settings ---------- */
+  const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
+  const markSpeed = r => [...$('chips').children].forEach(c => c.classList.toggle('sel', +c.dataset.r === r));
+  const setSpeed = r => {
+    v.defaultPlaybackRate = r; v.playbackRate = r; store.set('rate', r); toast('سرعت ' + fa(r) + '×'); markSpeed(r);
+  };
+  SPEEDS.forEach(r => {
+    const b = document.createElement('button'); b.className = 'chip'; b.dataset.r = r; b.textContent = fa(r) + '×';
+    b.onclick = () => setSpeed(r); $('chips').appendChild(b);
+  });
+  { const sr = parseFloat(store.get('rate')), r0 = SPEEDS.includes(sr) ? sr : 1; v.defaultPlaybackRate = r0; v.playbackRate = r0; markSpeed(r0); }
+  $('set').onclick = e => { e.stopPropagation(); $('menu').classList.toggle('on'); $('set').classList.toggle('on'); };
+  $('menu').onclick = e => e.stopPropagation();
+  document.addEventListener('click', () => { $('menu').classList.remove('on'); $('set').classList.remove('on'); });
+  $('loop').onchange = e => { v.loop = e.target.checked; toast(v.loop ? 'تکرار روشن' : 'تکرار خاموش'); };
+
+  /* ---------- theater / pip / cast / fullscreen ---------- */
+  const theater = () => { const on = $('wrap').classList.toggle('theater'); $('theater').classList.toggle('on', on); };
+  $('theater').onclick = theater;
+
+  const pip = async () => {
+    try { document.pictureInPictureElement ? await document.exitPictureInPicture() : await v.requestPictureInPicture(); }
+    catch (e) { toast('مرورگر شما این قابلیت را پشتیبانی نمی‌کند'); }
+  };
+  $('pip').onclick = pip;
+  if (!document.pictureInPictureEnabled) $('pip').hidden = true;
+
+  if (v.remote && v.remote.prompt) { $('cast').hidden = false; $('cast').onclick = () => v.remote.prompt().catch(() => toast('دستگاهی پیدا نشد')); }
+
+  const inFs = () => document.fullscreenElement || document.webkitFullscreenElement;
+  const fs = () => {
+    if (inFs()) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
+    const f = pl.requestFullscreen || pl.webkitRequestFullscreen;
+    if (f) f.call(pl); else if (v.webkitEnterFullscreen) v.webkitEnterFullscreen();
+  };
+  $('fs').onclick = fs;
+  const fsUI = () => icon('fs', inFs() ? 'nofs' : 'fs');
+  document.addEventListener('fullscreenchange', fsUI); document.addEventListener('webkitfullscreenchange', fsUI);
+
+  /* بدون قفل جهت صفحه: کاربر آزاد است گوشی را افقی یا عمودی نگه دارد */
+  /* اندازهٔ واقعی ویدیو: به صفحهٔ والد خبر می‌دهیم تا قاب برای ویدیوی عمودی/افقی تنظیم شود */
+  const embedded = document.documentElement.classList.contains('embed');
+  const vsize = () => {
+    if (!v.videoWidth || !v.videoHeight) return;
+    if (embedded) { try { parent.postMessage({ type: 'player-size', w: v.videoWidth, h: v.videoHeight }, '*'); } catch (e) {} }
+    else pl.style.aspectRatio = Math.min(2.4, Math.max(.5, v.videoWidth / v.videoHeight));
+  };
+  ['loadedmetadata', 'resize'].forEach(e => v.addEventListener(e, vsize));
+  if (v.readyState >= 1) vsize();
+  let wl; const hold = async () => { try { if (wl && !wl.released) return; wl = await navigator.wakeLock.request('screen'); } catch (e) {} }, free = () => { try { wl && wl.release(); } catch (e) {} wl = null; };
+  v.addEventListener('play', hold); v.addEventListener('pause', free); v.addEventListener('ended', free);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && !v.paused) hold(); });
+  if ('mediaSession' in navigator) { try { navigator.mediaSession.metadata = new MediaMetadata({ title: document.title }); [['play', () => v.play()], ['pause', () => v.pause()], ['seekbackward', () => skip(-10)], ['seekforward', () => skip(10)]].forEach(([k, f]) => navigator.mediaSession.setActionHandler(k, f)); } catch (e) {} }
+
+  /* ---------- click zones: tap = play, double tap = skip / fullscreen ---------- */
+  const touchy = matchMedia('(pointer:coarse)').matches;
+  let clickT, lt = 0, wasIdle = false;
+  pl.addEventListener('pointerdown', () => { wasIdle = pl.classList.contains('idle'); }, true);
+  v.addEventListener('click', e => {
+    const n = Date.now(), r = v.getBoundingClientRect(), x = (e.clientX - r.left) / r.width;
+    if (n - lt < 300) {
+      clearTimeout(clickT); lt = 0;
+      if (x < .33) { skip(-10); $('ripL').textContent = '−۱۰'; flash('ripL'); } else if (x > .67) { skip(10); $('ripR').textContent = '+۱۰'; flash('ripR'); } else fs();
+      return;
+    }
+    lt = n; const hid = wasIdle;
+    clickT = setTimeout(() => { if (touchy && hid && !v.paused) wake(); else toggle(); }, 260);
+  });
+  const flash = id => { const el = $(id); el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); };
+
+  /* ---------- auto-hide controls ---------- */
+  let idleT;
+  function wake() {
+    pl.classList.remove('idle'); clearTimeout(idleT);
+    if (!v.paused) idleT = setTimeout(() => { if (!$('menu').classList.contains('on') && !drag) pl.classList.add('idle'); }, 2800);
+  }
+  ['mousemove', 'pointerdown', 'touchstart', 'keydown'].forEach(e => pl.addEventListener(e, wake));
+  pl.addEventListener('mouseleave', () => { if (!v.paused) pl.classList.add('idle'); });
+  v.addEventListener('play', wake);
+  if (location.hash === '#autoplay') v.play().catch(() => {});
+
+  /* ---------- keyboard ---------- */
+  document.addEventListener('keydown', e => {
+    if (e.target.matches('input[type=range], select') && /Arrow/.test(e.code)) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const k = e.key.toLowerCase();
+    if (e.code === 'Space' && e.target.tagName === 'BUTTON') return;
+    if (e.code === 'Space' || k === 'k') { e.preventDefault(); toggle(); }
+    else if (e.code === 'ArrowRight') { e.preventDefault(); skip(5); flash('ripR'); $('ripR').textContent = '+۵'; }
+    else if (e.code === 'ArrowLeft') { e.preventDefault(); skip(-5); flash('ripL'); $('ripL').textContent = '−۵'; }
+    else if (k === 'l') { skip(10); $('ripR').textContent = '+۱۰'; flash('ripR'); }
+    else if (k === 'j') { skip(-10); $('ripL').textContent = '−۱۰'; flash('ripL'); }
+    else if (e.code === 'ArrowUp') { e.preventDefault(); v.muted = false; setVol(v.volume + .05); }
+    else if (e.code === 'ArrowDown') { e.preventDefault(); setVol(v.volume - .05); }
+    else if (k === 'm') $('mute').click();
+    else if (k === 'f') fs();
+    else if (k === 't') theater();
+    else if (k === 'p') pip();
+    else if (e.key === '>' || e.key === '.') { const i = SPEEDS.indexOf(v.playbackRate); setSpeed(SPEEDS[Math.min(SPEEDS.length - 1, i + 1)] || 1); }
+    else if (e.key === '<' || e.key === ',') { const i = SPEEDS.indexOf(v.playbackRate); setSpeed(SPEEDS[Math.max(0, (i < 0 ? 2 : i) - 1)]); }
+    else if (/^[0-9]$/.test(e.key) && v.duration) v.currentTime = v.duration * (+e.key / 10);
+    else return;
+    wake();
+  });
+})();
+</script>
+</body>
+</html>
